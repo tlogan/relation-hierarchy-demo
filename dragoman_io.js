@@ -14,29 +14,63 @@ dragoman.io = function(){
     var mod_height = '50px';
 
     var panel = function(id) {
-      return div(id)
-        .css('max-width', '400px')
+      return div(id).attr('class', 'panel')
+        .css('width', '400px')
         .css('height', '100%')
         .css('background-color', '#ddd')
+        .css('display', 'inline-block')
+        .css('vertical-align', 'top')
       ;
     };
 
-    var panel_item = function(id, text) {
-      return div(id)
-        .css('height', mod_height)
+    var panel_item = function(id) {
+      return div(id).attr('class', 'panel_item')
         .css('background-color', '#eef')
         .css('border-bottom', '2px solid #ccc')
+        .css('border-left', '2px solid #9d9')
         .css('cursor', 'pointer')
-        .append(function() {
-          return $('<div></div>')
-            .text(text)
-            .css('color', '#88c')
-            .css('padding-top', '15')
-            .css('padding-left', '15')
-          ;
-        }())
       ;
     };
+
+    var text_item = function(text) {
+      return $('<div></div>')
+        .text(text)
+        .css('color', '#88c')
+        .css('padding-left', '15')
+      ;
+    };
+
+    var mod_panel_item = function(id, text) {
+      return panel_item(id)
+        .css('height', mod_height)
+        .append(text_item(text)
+          .css('padding-top', '15')
+        )
+      ;
+    };
+
+    var organization_settings_item = function() {
+      return panel_item('organization_settings')
+        .append(text_item('message organization:')) 
+        .append(text_item('anchor as')) 
+        .append(text_item('group by')) 
+        .append(text_item('filter where')) 
+        .append(text_item('display as')) 
+      ;
+    };
+
+    var add_panel = function(panel) {
+      io.append(panel);
+    };
+
+    var remove_panels = function() {
+      io.find('div.panel').each(function(index) {
+        if (index > 0) {
+          $(this).remove();
+        }
+      }) 
+    };
+
 
     var io = function() {
       return $('#io')
@@ -44,21 +78,20 @@ dragoman.io = function(){
         .css('color', '#fff')
         .css('background-color', '#ccc')
         .css('height', '100%')
-        .append(function() {
-          return div('control_bar')
-            .css('height', mod_height)
-            .css('background-color', '#9d9')
-          ;
-        }())
-        .append(function() {
-          return panel('root')
-            .append(panel_item('new', 'new')
-              .click(function() {
-                alert('you clicked new');
-              })
-            )
-          ;
-        }())
+        .append(div('control_bar')
+          .css('height', mod_height)
+          .css('background-color', '#9d9')
+        )
+        .append(panel('root')
+          .append(mod_panel_item('new', 'new')
+            .click(function() {
+              remove_panels();
+              add_panel(panel('organization_settings')
+                .append(organization_settings_item())
+              );
+            })
+          )
+        )
       ;
     }();
     
