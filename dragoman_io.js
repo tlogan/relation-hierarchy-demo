@@ -44,16 +44,42 @@ dragoman.io = function(){
   };
 
   var table = function() {
-    return $('<table></table>');
-  };
-
-  var td = function() {
-    return $('<td></td>').css('color', blue);
+    var t = $('<table></table>');
+    t.populate = function(rows) {
+      _.forEach(rows, function(cells) {
+        t.append(
+          tr().populate(cells)
+        );
+      });
+      return t;
+    };
+    return t;
   };
 
   var tr = function() {
-    return $('<tr></tr>');
+    var tr = $('<tr></tr>');
+    tr.populate = function(cells) {
+      _.forEach(cells, function(cell) {
+        tr.append(
+          td().append(cell)
+        );
+      });
+      return tr;
+    };
+    return tr;
   };
+
+  var td = function() {
+    var td = $('<td></td>').css('color', blue);
+    td.populate = function(cell) {
+      _.forEach(cell, function(item) {
+        td.append(item);
+      });
+      return td;
+    };
+    return td;
+  };
+
 
   var mod_panel_item = function(id, text) {
     return panel_item(id)
@@ -63,9 +89,11 @@ dragoman.io = function(){
     ;
   };
 
-  var text_input = function() {
+  var text_input = function(value) {
     return $('<input type="text"/>')
+      .attr('value', value)
       .css('outline', 'none')
+      .css('border', '1px solid ' + dk_gray)
       .focus(function() {
         $(this).css('border', '1px solid ' + green)
       })
@@ -75,33 +103,50 @@ dragoman.io = function(){
     ;
   };
 
+  var qword_div = function(qword) {
+    var d = div() 
+      .text(qword.name)
+      .css('display', 'inline-block')
+      .css('vertical-align', 'top')
+      .css('color', white)
+      .css('background-color', dk_gray)
+      .css('margin-left', '4px')
+      .css('padding', '4px')
+      .css('cursor', 'pointer')
+    ;
+
+    d.qword = qword;
+
+    return d;
+
+  };
+
+  var qword_divs = function(qwords) {
+
+    return _.map(qwords, function(qword) {
+      return qword_div(qword);
+    });
+  };
+
   var organization_item = function(org) {
 
-    alert(JSON.stringify(org));
+
+    var rows = [
+      [ ['anchor as'], [text_input(org.anchor)] ],
+      [ ['group by'], qword_divs(org.grouping) ],
+      [ ['filter where'], qword_divs(org.filtering) ],
+      [ ['display as'], qword_divs(org.display) ]
+    ];
 
     return panel_item('organization')
       .css('padding-top', '15px')
       .css('padding-bottom', '15px')
       .append(text_item('message organization:'))
-      .append(function() {
-        var t = table() 
-          .css('padding-left', '15px');
-        _.forEach([
-          ['anchor as', text_input()],
-          ['group by', ''] ,
-          ['filter where', ''], 
-          ['display as', ''] 
-        ], function(item) {
-          t.append(
-            tr().append(
-              td().text(item[0])
-            ).append(
-              td().append(item[1])
-            )
-          );
-        }); 
-        return t;
-      })
+      .append(
+        table().css('padding-left', '15px')
+          .populate(rows)
+      )
+    ;
   };
 
 
@@ -145,7 +190,7 @@ dragoman.io = function(){
 
     io.css('font-family', 'sans-serif')
       .css('color', white)
-      .css('background-color', gray)
+      .css('background-color', dk_gray)
       .css('height', '100%')
       .append(div().attr('id', 'control_bar')
         .css('height', mod_height)
