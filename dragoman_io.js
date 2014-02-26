@@ -37,9 +37,16 @@ dragoman.io = function(){
   var text_item = function(text) {
     return div() 
       .text(text)
+    ;
+  };
+
+  var mod_text_item = function(text) {
+    return div() 
+      .text(text)
       .css('color', blue)
-      .css('padding-top', '15px')
-      .css('padding-left', '15px')
+      .css('padding-top', '16px')
+      .css('padding-left', '16px')
+      .css('padding-bottom', '16px')
     ;
   };
 
@@ -85,13 +92,15 @@ dragoman.io = function(){
     return panel_item(id)
       .css('cursor', 'pointer')
       .css('height', mod_height)
-      .append(text_item(text))
+      .append(mod_text_item(text))
     ;
   };
 
   var text_input = function(value) {
     return $('<input type="text"/>')
       .attr('value', value)
+      .css('font-size', 'inherit')
+      .css('padding', '4px')
       .css('outline', 'none')
       .css('border', '1px solid ' + dk_gray)
       .focus(function() {
@@ -130,20 +139,33 @@ dragoman.io = function(){
 
   var organization_item = function(org) {
 
-
-    var rows = [
-      [ ['anchor as'], [text_input(org.anchor)] ],
-      [ ['group by'], qword_divs(org.grouping) ],
-      [ ['filter where'], qword_divs(org.filtering) ],
-      [ ['display as'], qword_divs(org.display) ]
-    ];
+    var rows = _.map( [
+      ['anchor as', org.anchor ],
+      ['group by', org.grouping],
+      ['filter where', org.filtering],
+      ['display as', org.display]
+    ], function(item, index) {
+      return [
+        [text_item(item[0])
+          .css('background-color', green)
+          .css('color', white)
+          .css('text-align', 'right')
+          .css('padding', '4px')],
+        (index === 0) 
+          ? [text_input(item[1])]
+          : qword_divs(item[1])
+      ];
+    });
 
     return panel_item('organization')
-      .css('padding-top', '15px')
-      .css('padding-bottom', '15px')
-      .append(text_item('message organization:'))
+      .append(mod_text_item('message organization:')
+        .css('background-color', blue)
+        .css('color', white)
+      )
       .append(
-        table().css('padding-left', '15px')
+        table().css('padding-left', '4px')
+          .css('padding-top', '4px')
+          .css('padding-bottom', '4px')
           .populate(rows)
       )
     ;
