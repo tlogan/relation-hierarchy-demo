@@ -110,15 +110,73 @@ dragoman.state = function() {
     return result;
   });
 
+
+
+  var none = {name: 'none'};
+
+  var ops =  _.reduce([
+    ['inter', 'x', 'intersection'],
+    ['union', '+', 'union'],
+    ['nest', '/', 'nest'],
+    ['equal', '=', 'equal']
+  ], function (result, item) {
+    result[item[0]] = dragoman.operation(item[1], item[2]);
+    return result;
+  });
+
+  var message_attrs =  _.reduce([
+    ['contact', 'contact'],
+    ['body', 'body'],
+    ['sender', 'sender'],
+    ['receiver', 'receiver'],
+    ['time', 'time'],
+    ['read', 'read']
+  ], function (result, item) {
+    result[item[0]] = dragoman.message_attr(item[1]);
+    return result;
+  });
+
+
+  //////////////////
+
+  var io_handlers = [];
+
+  var organizations = {};
+
+  var notify_handlers = function(on_state_change, obj) {
+    _.forEach(io_handlers, function(handler) {
+      handler[on_state_change](obj)
+    });
+  };
+
+  var sections = {};
+
+  var set_sections = function(new_sections) {
+    sections = new_sections;
+    notify_handlers('on_sections_change', sections);
+  };
+
+  //interface
+  var subscribe = function(io_handler) {
+    io_handler.on_sections_change(sections)
+    io_handlers.push(io_handler);
+  };
+
+  var create_new_organization = function() {
+    set_sections({
+      organization: 
+        dragoman.organization(
+          '',
+          [none], 
+          [none], 
+          [message_attrs.body]
+        )
+    }); 
+  };
+
   return {
-    hosts: hosts,
-    accounts: accounts,
-    protocols: protocols,
-    account_protocols: account_protocols,
-    xmpp_send_subscriptions: xmpp_send_subscriptions,
-    contacts: contacts,
-    account_protocol_contacts: account_protocol_contacts,
-    messages: messages,
+    subscribe: subscribe,
+    create_new_organization: create_new_organization 
   };
 
 }();
