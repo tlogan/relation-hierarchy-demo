@@ -45,12 +45,16 @@ dragoman.message = function(sender, receiver, time, read, body) { return {
 };};
 
 
-dragoman.organization = function(id, name, grouping, filtering, preview) { return {
-  id: id,
-  name: name,
+dragoman.query = function(grouping, filtering, preview) { return {
   grouping: grouping,
   filtering: filtering,
-  preview: preview 
+  preview: preview
+};};
+
+dragoman.organization = function(id, name, query) { return {
+  id: id,
+  name: name,
+  query: query 
 };};
 
 dragoman.qword = function(id, text) { return {

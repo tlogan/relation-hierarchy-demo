@@ -111,11 +111,11 @@ dragoman.io = function(){
     ;
   };
 
-  var qword_div = function(qword, position, phrase_type) {
+  var qword_div = function(qword, position, query_type) {
 
     var d = div() 
       .text(qword.text)
-      .attr('id', [qword.id, position, phrase_type].join('-')) 
+      .attr('id', [qword.id, position, query_type].join('-')) 
       .css('display', 'inline-block')
       .css('vertical-align', 'top')
       .css('color', white)
@@ -125,6 +125,9 @@ dragoman.io = function(){
       .css('min-height', '19px')
       .css('min-width', '19px')
       .css('cursor', 'pointer')
+      .click(function() {
+        dragoman.state.change_qword(position, query_type);
+      })
     ;
 
     d.qword = qword;
@@ -140,24 +143,31 @@ dragoman.io = function(){
     });
   };
 
+  var table_text_item = function(text) {
+    return text_item(text)
+      .css('background-color', green)
+      .css('color', white)
+      .css('text-align', 'right')
+      .css('padding', '4px');
+  };
+
   var organization_item = function(org) {
 
-    var rows = _.filter(_.map(org, function(item, key) {
-      return (key != 'id') 
-        ? [
-            [text_item(key)
-              .css('background-color', green)
-              .css('color', white)
-              .css('text-align', 'right')
-              .css('padding', '4px')],
-            (key == 'name') 
-              ? [text_input(item)]
-              : qword_divs(key, item)
-        ] 
-        : null;
-    }), function(item) {
-      return (item != null);
-    });
+
+    var rows = [
+
+    ] 
+    ;
+
+    var rows = _.union(
+
+      [ [ [table_text_item('name')], [text_input(org.name)] ] ],
+
+      _.map(org.query, function(qwords, query_type) {
+        return [ [table_text_item(query_type)], qword_divs(query_type, qwords) ];
+      })
+
+    );
 
     return panel_item('organization')
       .append(mod_text_item('message organization')

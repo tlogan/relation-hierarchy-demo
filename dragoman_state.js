@@ -144,9 +144,11 @@ dragoman.state = function() {
     dragoman.organization(
       'new',
       '',
-      [qwords.done], 
-      [qwords.done], 
-      [qwords.body, qwords.done]
+      dragoman.query(
+        [qwords.done], 
+        [qwords.done], 
+        [qwords.body, qwords.done]
+      )
     );
 
   var new_org_data = dragoman.org_data(new_org, null);
@@ -171,9 +173,20 @@ dragoman.state = function() {
     set_org_data(new_org_data);
   };
 
+  var change_qword = function(position, query_type) {
+
+    alert(position + ' ' + query_type);
+
+    if (org_data == null) {
+      console.log('Error: org_data is null when change_qword called');
+    } 
+
+  }
+
   return {
     subscribe: subscribe,
-    create_new_organization: create_new_organization 
+    create_new_organization: create_new_organization,
+    change_qword: change_qword 
   };
 
 }();
