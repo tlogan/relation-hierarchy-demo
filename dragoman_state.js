@@ -111,20 +111,13 @@ dragoman.state = function() {
   });
 
 
+  var qwords =  _.reduce([
+    ['intersection', 'x'],
+    ['union', '+'],
+    ['nest', '/'],
+    ['equal', '='],
+    ['done', ''],
 
-  var none = {name: 'none'};
-
-  var ops =  _.reduce([
-    ['inter', 'x', 'intersection'],
-    ['union', '+', 'union'],
-    ['nest', '/', 'nest'],
-    ['equal', '=', 'equal']
-  ], function (result, item) {
-    result[item[0]] = dragoman.operation(item[1], item[2]);
-    return result;
-  });
-
-  var message_attrs =  _.reduce([
     ['contact', 'contact'],
     ['body', 'body'],
     ['sender', 'sender'],
@@ -132,10 +125,9 @@ dragoman.state = function() {
     ['time', 'time'],
     ['read', 'read']
   ], function (result, item) {
-    result[item[0]] = dragoman.message_attr(item[1]);
+    result[item[0]] = dragoman.qword(item[0], item[1]);
     return result;
   });
-
 
   //////////////////
 
@@ -143,7 +135,7 @@ dragoman.state = function() {
 
   var notify_handlers = function(on_state_change, obj) {
     _.forEach(io_handlers, function(handler) {
-      handler[on_state_change](obj)
+      handler[on_state_change](obj);
     });
   };
 
@@ -152,9 +144,9 @@ dragoman.state = function() {
     dragoman.organization(
       'new',
       '',
-      [none], 
-      [none], 
-      [message_attrs.body]
+      [qwords.done], 
+      [qwords.done], 
+      [qwords.body, qwords.done]
     );
 
   var new_org_data = dragoman.org_data(new_org, null);

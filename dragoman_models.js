@@ -44,22 +44,18 @@ dragoman.message = function(sender, receiver, time, read, body) { return {
   body: body 
 };};
 
-dragoman.operation = function(symbol, name) { return {
-  symbol: symbol,
-  name: name 
-};};
 
-dragoman.message_attr = function(name) { return {
-  name: name 
-};};
-
-
-dragoman.organization = function(id, anchor, grouping, filtering, display) { return {
+dragoman.organization = function(id, name, grouping, filtering, preview) { return {
   id: id,
-  anchor: anchor,
+  name: name,
   grouping: grouping,
   filtering: filtering,
-  display: display
+  preview: preview 
+};};
+
+dragoman.qword = function(id, text) { return {
+  id: id,
+  text: text  
 };};
 
 dragoman.org_data = function(org, data) { return {
