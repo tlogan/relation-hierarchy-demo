@@ -61,3 +61,9 @@ dragoman.organization = function(anchor, grouping, filtering, display) { return 
   display: display
 };};
 
+dragoman.org_data = function(id, org, data) { return {
+  id: id,
+  org: org,
+  data: data 
+};};
+

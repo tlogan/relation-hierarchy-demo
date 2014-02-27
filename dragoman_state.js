@@ -141,37 +141,40 @@ dragoman.state = function() {
 
   var io_handlers = [];
 
-  var organizations = {};
-
   var notify_handlers = function(on_state_change, obj) {
     _.forEach(io_handlers, function(handler) {
       handler[on_state_change](obj)
     });
   };
 
-  var sections = {};
 
-  var set_sections = function(new_sections) {
-    sections = new_sections;
-    notify_handlers('on_sections_change', sections);
+  var new_org = 
+    dragoman.organization(
+      '',
+      [none], 
+      [none], 
+      [message_attrs.body]
+    );
+  var new_org_data = dragoman.org_data('new', new_org, null);
+
+  var organizations = {};
+  
+  var org_data = null;
+
+  var set_org_data = function(_org_data) {
+    org_data = _org_data;
+    notify_handlers('on_org_data_change', org_data);
   };
 
   //interface
   var subscribe = function(io_handler) {
-    io_handler.on_sections_change(sections)
+    io_handler.on_org_data_change(org_data);
+    io_handler.on_new_org_data_change(new_org_data);
     io_handlers.push(io_handler);
   };
 
   var create_new_organization = function() {
-    set_sections({
-      organization: 
-        dragoman.organization(
-          '',
-          [none], 
-          [none], 
-          [message_attrs.body]
-        )
-    }); 
+    set_org_data(new_org_data);
   };
 
   return {

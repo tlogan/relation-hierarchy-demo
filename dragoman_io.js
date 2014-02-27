@@ -2,9 +2,8 @@ dragoman.io = function(){
 
 
 
-  var body = $('body')
-    .css('margin', 0);
-  var io = $('#io');
+
+
   var div = function() {
     return $('<div></div>');
   };
@@ -158,7 +157,7 @@ dragoman.io = function(){
     });
 
     return panel_item('organization')
-      .append(mod_text_item('message organization:')
+      .append(mod_text_item('message organization')
         .css('background-color', blue)
         .css('color', white)
       )
@@ -172,45 +171,18 @@ dragoman.io = function(){
   };
 
 
-  var add_panel = function(panel) {
-    io.append(panel);
+  var org_panel = function(org) {
+    return panel('organization')
+      .append(organization_item(org));
   };
 
+  var body = $('body')
+    .css('margin', 0);
 
-  var remove_panels = function() {
-    io.find('div.panel').each(function(index) {
-      if (index > 0) {
-        $(this).remove();
-      }
-    }) 
-  };
+  var io = function() {
 
-
-  var panels = {
-    organization: function(org) {
-      return panel('organization')
-        .append(organization_item(org));
-    }
-  };
-
-  var on_sections_change = function(sections) {
-
-    remove_panels();
-    _.forEach(sections, function(section, name) {
-      add_panel(
-        panels[name](section)
-      );
-    });
-    
-  };
-
-  var handler = {
-    on_sections_change: on_sections_change,
-  };
-
-  var start = function() {
-
-    io.css('font-family', 'sans-serif')
+    var i = $('#io')
+      .css('font-family', 'sans-serif')
       .css('color', white)
       .css('background-color', dk_gray)
       .css('height', '100%')
@@ -218,14 +190,80 @@ dragoman.io = function(){
         .css('height', mod_height)
         .css('background-color', green)
       )
-      .append(panel('root')
-        .append(mod_panel_item('new', 'new')
-          .click(function() {
-            dragoman.state.create_new_organization()
-          })
-        )
-      )
-    ;
+      .append(panel('anchor_panel'))
+
+      ;
+
+    i.remove_panels = function() {
+      i.find('div.panel').each(function(index) {
+        if (index > 0) {
+          $(this).remove();
+        }
+      }); 
+      return i;
+    };
+
+    i.add_panel = function(panel) {
+      i.append(panel);
+      return i;
+    };
+
+
+    return i;
+
+  }();
+
+  var anchor_panel = function() {
+    var a = io.find('#anchor_panel');
+    a.highlight = function(id) {
+
+      a.find('div.panel_item').each(function(index) {
+        var panel_item = $(this);
+        if (panel_item.attr('id') == id) {
+          panel_item.css('background-color', dk_gray);
+        } else {
+          panel_item.css('background-color', blue_gray);
+        } 
+      });
+      return a;
+    };
+    return a;
+  }();
+
+  var on_org_data_change = function(org_data) {
+
+    if (org_data != null) {
+      io.remove_panels();
+      var data = org_data.data;
+      var org = org_data.org;
+      var id = org_data.id;
+      if (data == null) {
+        anchor_panel.highlight(id)
+        io.add_panel(org_panel(org_data.org));
+      } else {
+        alert('not yet implemented');
+      }
+    }
+    
+  };
+
+  var on_new_org_data_change = function(new_org_data) {
+
+    var id = new_org_data.id;
+    anchor_panel.append(mod_panel_item(id, id)
+      .click(function() {
+        dragoman.state.create_new_organization()
+      })
+    );
+    
+  };
+
+  var handler = {
+    on_org_data_change: on_org_data_change,
+    on_new_org_data_change: on_new_org_data_change
+  };
+
+  var start = function() {
 
     dragoman.state.subscribe(handler);
 
