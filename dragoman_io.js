@@ -236,10 +236,9 @@ dragoman.io = function(){
       io.remove_panels();
       var data = org_data.data;
       var org = org_data.org;
-      var id = org_data.id;
       if (data == null) {
-        anchor_panel.highlight(id)
-        io.add_panel(org_panel(org_data.org));
+        anchor_panel.highlight(org.id)
+        io.add_panel(org_panel(org));
       } else {
         alert('not yet implemented');
       }
@@ -249,7 +248,7 @@ dragoman.io = function(){
 
   var on_new_org_data_change = function(new_org_data) {
 
-    var id = new_org_data.id;
+    var id = new_org_data.org.id;
     anchor_panel.append(mod_panel_item(id, id)
       .click(function() {
         dragoman.state.create_new_organization()

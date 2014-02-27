@@ -54,15 +54,15 @@ dragoman.message_attr = function(name) { return {
 };};
 
 
-dragoman.organization = function(anchor, grouping, filtering, display) { return {
+dragoman.organization = function(id, anchor, grouping, filtering, display) { return {
+  id: id,
   anchor: anchor,
   grouping: grouping,
   filtering: filtering,
   display: display
 };};
 
-dragoman.org_data = function(id, org, data) { return {
-  id: id,
+dragoman.org_data = function(org, data) { return {
   org: org,
   data: data 
 };};

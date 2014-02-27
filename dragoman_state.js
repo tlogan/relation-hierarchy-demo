@@ -150,12 +150,14 @@ dragoman.state = function() {
 
   var new_org = 
     dragoman.organization(
+      'new',
       '',
       [none], 
       [none], 
       [message_attrs.body]
     );
-  var new_org_data = dragoman.org_data('new', new_org, null);
+
+  var new_org_data = dragoman.org_data(new_org, null);
 
   var organizations = {};
   
