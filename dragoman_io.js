@@ -126,7 +126,7 @@ dragoman.io = function(){
       .css('min-width', '19px')
       .css('cursor', 'pointer')
       .click(function() {
-        dragoman.state.change_qword(position, query_type);
+        dragoman.state.change_qword_selection(position, query_type);
       })
     ;
 
@@ -185,8 +185,19 @@ dragoman.io = function(){
 
 
   var org_panel = function(org) {
-    return panel('organization')
+    var p = panel('organization')
       .append(organization_item(org));
+
+    show_options = function(qword_selection) {
+
+      var position = qword_selection.position;
+      var type = qword_selection.query_type;
+      var qwords = qword_selection.query_type;
+
+      return p;
+    };
+
+    return p;
   };
 
   var body = $('body')
@@ -243,25 +254,29 @@ dragoman.io = function(){
     return a;
   }();
 
-  var on_org_data_change = function(org_data) {
+  var on_foc_org_change = function(foc_org) {
 
-    if (org_data != null) {
-      io.remove_panels();
-      var data = org_data.data;
-      var org = org_data.org;
-      if (data == null) {
-        anchor_panel.highlight(org.id)
-        io.add_panel(org_panel(org));
-      } else {
-        alert('not yet implemented');
-      }
+    if (foc_org != null) {
+      anchor_panel.highlight(foc_org.id);
     }
     
   };
 
-  var on_new_org_data_change = function(new_org_data) {
+  var edit_org_panel = null;
 
-    var id = new_org_data.org.id;
+  var on_edit_org_change = function(edit_org) {
+
+    io.remove_panels();
+    if (edit_org != null) {
+      edit_org_panel = org_panel(edit_org);
+      io.add_panel(edit_org_panel);
+    }
+    
+  };
+
+  var on_new_org_change = function(new_org) {
+
+    var id = new_org.id;
     anchor_panel.append(mod_panel_item(id, id)
       .click(function() {
         dragoman.state.create_new_organization()
@@ -270,9 +285,19 @@ dragoman.io = function(){
     
   };
 
+  var on_qword_selection_change = function(qword_selection) {
+    if (edit_org_panel != null) {
+      alert(JSON.stringify(qword_selection));
+    } else {
+      alert('yikes...');
+    }
+  };
+
   var handler = {
-    on_org_data_change: on_org_data_change,
-    on_new_org_data_change: on_new_org_data_change
+    on_new_org_change: on_new_org_change,
+    on_foc_org_change: on_foc_org_change,
+    on_edit_org_change: on_edit_org_change,
+    on_qword_selection_change: on_qword_selection_change
   };
 
   var start = function() {

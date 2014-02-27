@@ -111,23 +111,6 @@ dragoman.state = function() {
   });
 
 
-  var qwords =  _.reduce([
-    ['intersection', 'x'],
-    ['union', '+'],
-    ['nest', '/'],
-    ['equal', '='],
-    ['done', ''],
-
-    ['contact', 'contact'],
-    ['body', 'body'],
-    ['sender', 'sender'],
-    ['receiver', 'receiver'],
-    ['time', 'time'],
-    ['read', 'read']
-  ], function (result, item) {
-    result[item[0]] = dragoman.qword(item[0], item[1]);
-    return result;
-  });
 
   //////////////////
 
@@ -145,48 +128,59 @@ dragoman.state = function() {
       'new',
       '',
       dragoman.query(
-        [qwords.done], 
-        [qwords.done], 
-        [qwords.body, qwords.done]
+        [dragoman.qwords.done], 
+        [dragoman.qwords.done], 
+        [dragoman.qwords.body, dragoman.qwords.done]
       )
     );
 
-  var new_org_data = dragoman.org_data(new_org, null);
 
   var organizations = {};
-  
-  var org_data = null;
 
-  var set_org_data = function(_org_data) {
-    org_data = _org_data;
-    notify_handlers('on_org_data_change', org_data);
+  var foc_org = null;
+  var set_foc_org = function(_foc_org) {
+    foc_org = _foc_org;
+    notify_handlers('on_foc_org_change', foc_org);
+  };
+
+  var edit_org = null;
+  var set_edit_org = function(_edit_org) {
+    edit_org = _edit_org;
+    notify_handlers('on_edit_org_change', edit_org);
+  };
+
+  var qword_selection = null;
+  var set_qword_selection = function(_qword_selection) {
+    qword_selection = _qword_selection;
+    notify_handlers('on_qword_selection_change', qword_selection);
   };
 
   //interface
   var subscribe = function(io_handler) {
-    io_handler.on_org_data_change(org_data);
-    io_handler.on_new_org_data_change(new_org_data);
+    io_handler.on_foc_org_change(foc_org),
+    io_handler.on_edit_org_change(edit_org),
+    io_handler.on_new_org_change(new_org)
+    io_handler.on_qword_selection_change(new_org)
+
     io_handlers.push(io_handler);
   };
 
   var create_new_organization = function() {
-    set_org_data(new_org_data);
+    set_foc_org(new_org);
+    set_edit_org(new_org);
   };
 
-  var change_qword = function(position, query_type) {
 
-    alert(position + ' ' + query_type);
+  var change_qword_selection = function(position, query_type) {
 
-    if (org_data == null) {
-      console.log('Error: org_data is null when change_qword called');
-    } 
+    set_qword_selection(dragoman.qword_selection(position, query_type)); 
 
   }
 
   return {
     subscribe: subscribe,
     create_new_organization: create_new_organization,
-    change_qword: change_qword 
+    change_qword_selection: change_qword_selection 
   };
 
 }();

@@ -62,8 +62,56 @@ dragoman.qword = function(id, text) { return {
   text: text  
 };};
 
-dragoman.org_data = function(org, data) { return {
+dragoman.org_data = function(org, data, options) { return {
   org: org,
-  data: data 
+  data: data, 
+  options: options
 };};
+
+dragoman.qwords = function() {
+
+  return _.reduce([
+    ['intersection', 'x'],
+    ['union', '+'],
+    ['nest', '/'],
+    ['equal', '='],
+    ['done', ''],
+
+    ['contact', 'contact'],
+    ['body', 'body'],
+    ['sender', 'sender'],
+    ['receiver', 'receiver'],
+    ['time', 'time'],
+    ['read', 'read']
+  ], function (result, item) {
+    result[item[0]] = dragoman.qword(item[0], item[1]);
+    return result;
+  });
+
+}();
+
+dragoman.qword_selection = function(position, query_type) { 
+
+  var all = dragoman.qwords;
+
+  var funcs = {
+    grouping: function(position) {
+      return [all.done, all.contact, all.body, all.sender];
+    },
+    filtering: function(position) {
+      return [all.done, all.contact, all.body, all.sender];
+    },
+    preview: function(position) {
+      return [all.done, all.contact, all.body, all.sender];
+    }
+  };
+
+  var qwords = funcs[query_type](position);
+
+  return {
+    postion: position,
+    query_type: query_type, 
+    qwords: qwords 
+  };
+};
 
