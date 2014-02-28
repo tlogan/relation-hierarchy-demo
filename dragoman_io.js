@@ -1,9 +1,5 @@
 dragoman.io = function(){
 
-
-
-
-
   var div = function() {
     return $('<div></div>');
   };
@@ -57,40 +53,15 @@ dragoman.io = function(){
   };
 
   var table = function() {
-    var t = $('<table></table>');
-    t.populate = function(rows) {
-      _.forEach(rows, function(cells) {
-        t.append(
-          tr().populate(cells)
-        );
-      });
-      return t;
-    };
-    return t;
+    return $('<table></table>');
   };
 
   var tr = function() {
-    var tr = $('<tr></tr>');
-    tr.populate = function(cells) {
-      _.forEach(cells, function(cell) {
-        tr.append(
-          td().append(cell)
-        );
-      });
-      return tr;
-    };
-    return tr;
+    return $('<tr></tr>');
   };
 
   var td = function() {
-    var td = $('<td></td>').css('color', blue);
-    td.populate = function(cell) {
-      _.forEach(cell, function(item) {
-        td.append(item);
-      });
-      return td;
-    };
-    return td;
+    return $('<td></td>').css('color', blue);
   };
 
 
@@ -167,10 +138,13 @@ dragoman.io = function(){
 
     var rows = _.union(
 
-      [ [ [table_text_item('name')], [text_input(org.name)] ] ],
+      [ tr().append(td().append(table_text_item('name')), td().append(text_input(org.name))) ],
 
       _.map(org.query, function(qwords, query_type) {
-        return [ [table_text_item(query_type)], installed_qword_divs(query_type, qwords) ];
+        return tr().append( 
+          td().append(table_text_item(query_type)), 
+          td().append(installed_qword_divs(query_type, qwords)) 
+        );
       })
 
     );
@@ -184,7 +158,7 @@ dragoman.io = function(){
         table().css('padding-left', '4px')
           .css('padding-top', '4px')
           .css('padding-bottom', '4px')
-          .populate(rows)
+          .append(rows)
       )
     ;
   };
