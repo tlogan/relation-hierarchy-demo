@@ -90,23 +90,50 @@ dragoman.qwords = function() {
 
 }();
 
-dragoman.qword_selection = function(position, query_type) { 
+
+dragoman.qword_selection = function(position, query_type, query) { 
 
   var all = dragoman.qwords;
 
-  var funcs = {
-    grouping: function(position) {
-      return [all.contact, all.body, all.sender];
-    },
-    filtering: function(position) {
-      return [all.contact, all.body, all.sender];
-    },
-    preview: function(position) {
-      return [all.contact, all.body, all.sender];
+  var attrs = [all.contact, all.body, all.sender, all.receiver, all.time, all.read];
+
+
+  var grouping_selection = function() {
+
+    if (position == 0) {
+      return  _.union([all.done], attrs);
+    } else {
+      var ss = [
+        _.union([all.done], attrs),
+        [all.done, all.nest, all.union, all.intersection]
+      ];
+      return ss[position % 2];
     }
+
   };
 
-  var qwords = funcs[query_type](position);
+  var filtering_selection = function() {
+
+    return [all.contact, all.body, all.sender];
+
+  };
+
+  var preview_selection = function() {
+    var ss = [
+      attrs,
+      [all.done, all.union]
+    ];
+
+    return ss[position % 2];
+  };
+
+  var selections = {
+    grouping: grouping_selection,
+    filtering: filtering_selection,
+    preview: preview_selection
+  };
+
+  var qwords = selections[query_type]();
 
   return {
     position: position,

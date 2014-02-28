@@ -173,7 +173,12 @@ dragoman.state = function() {
 
   var change_qword_selection = function(position, query_type) {
 
-    set_qword_selection(dragoman.qword_selection(position, query_type)); 
+    if (edit_org == null) {
+      alert('error: edit_org is null in change_qword_selection');
+    }
+
+    var query = edit_org.query[query_type];
+    set_qword_selection(dragoman.qword_selection(position, query_type, query)); 
 
   }
 

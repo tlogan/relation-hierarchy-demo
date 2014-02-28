@@ -105,8 +105,9 @@ dragoman.io = function(){
     return $('<input type="text"/>')
       .attr('value', value)
       .css('font-size', 'inherit')
-      .css('padding', '4px')
+      .css('padding', '2px')
       .css('outline', 'none')
+      .css('border', 'none')
       .css('border', '1px solid ' + dk_gray)
       .focus(function() {
         $(this).css('border', '1px solid ' + green)
