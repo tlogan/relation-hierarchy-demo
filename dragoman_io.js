@@ -134,7 +134,8 @@ dragoman.io = function(){
       .css('padding', '4px');
   };
 
-  var organization_item = function(org) {
+  var edit_org_item = function(org) {
+
 
     var rows = _.union(
 
@@ -149,8 +150,8 @@ dragoman.io = function(){
 
     );
 
-    return panel_item('organization')
-      .append(mod_text_item('message organization')
+    return panel_item('edit_org_item')
+      .append(mod_text_item('message organization settings')
         .css('background-color', blue)
         .css('color', white)
       )
@@ -164,20 +165,9 @@ dragoman.io = function(){
   };
 
 
-  var org_panel = function(org) {
-    var p = panel('organization')
-      .append(organization_item(org));
-
-    show_options = function(qword_selection) {
-
-      var position = qword_selection.position;
-      var type = qword_selection.query_type;
-      var qwords = qword_selection.query_type;
-
-      return p;
-    };
-
-    return p;
+  var edit_org_panel = function(org) {
+    return panel('edit_org_panel')
+      .append(edit_org_item(org));
   };
 
   var body = $('body')
@@ -246,14 +236,11 @@ dragoman.io = function(){
     
   };
 
-  var edit_org_panel = null;
-
   var on_edit_org_change = function(edit_org) {
 
     io.remove_panels();
     if (edit_org != null) {
-      edit_org_panel = org_panel(edit_org);
-      io.add_panel(edit_org_panel);
+      io.add_panel(edit_org_panel(edit_org));
     }
     
   };
