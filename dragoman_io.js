@@ -101,7 +101,7 @@ dragoman.io = function(){
 
   var installed_qword_div = function(qword, position, query_type) {
 
-    var d = qword_div() 
+    return qword_div() 
       .text(qword.text)
       .attr('id', position + '-' + query_type) 
       .attr('value', qword.id) 
@@ -112,10 +112,6 @@ dragoman.io = function(){
         dragoman.state.change_qword_selection(position, query_type);
       })
     ;
-
-    d.qword = qword;
-
-    return d;
 
   };
 
