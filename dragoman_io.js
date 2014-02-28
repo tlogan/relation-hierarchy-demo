@@ -260,15 +260,13 @@ dragoman.io = function(){
     return qword_div()
       .text(qword.text)
       .attr('id', qword.id)
-      .css('background-color', gray)
+      .css('background-color', white)
       .css('color', dk_gray)
-      .mouseenter(function() {
-        $(this).css('background-color', dk_gray)
-        $(this).css('color', gray)
-      })
       .mouseleave(function() {
+        $(this).css('background-color', white)
+      })
+      .mouseenter(function() {
         $(this).css('background-color', gray)
-        $(this).css('color', dk_gray)
       })
     ;
 
@@ -280,8 +278,7 @@ dragoman.io = function(){
     var d = div().attr('id', id)
       .css('display', 'inline-block')
       .css('vertical-align', 'top')
-      .css('border-bottom', '2px solid ' + white)
-      .css('border-left', '2px solid ' + white)
+      //.css('border-left', '2px solid ' + white)
       .css('position', 'absolute')
       .css('z-index', '100')
       ;
