@@ -8,9 +8,9 @@ dragoman.io = function(){
     return $('<div></div>');
   };
   var mod_height = '50px';
-  var blue = '#88c';
-  var green = '#9d9'; 
-  var dk_gray = '#ccc';
+  var blue = '#77b';
+  var green = '#7b7'; 
+  var dk_gray = '#aaa';
   var gray = '#ddd';
   var blue_gray = '#eef';
   var white = '#fff';
@@ -34,14 +34,13 @@ dragoman.io = function(){
   };
 
   var text_item = function(text) {
-    return div() 
+    return div().attr('class', 'text_item') 
       .text(text)
     ;
   };
 
   var mod_text_item = function(text) {
-    return div() 
-      .text(text)
+    return text_item(text) 
       .css('color', blue)
       .css('padding-top', '16px')
       .css('padding-left', '16px')
@@ -243,10 +242,13 @@ dragoman.io = function(){
 
       a.find('div.panel_item').each(function(index) {
         var panel_item = $(this);
+        var text_item = panel_item.find('div.text_item').first();
         if (panel_item.attr('id') == id) {
-          panel_item.css('background-color', dk_gray);
+          text_item.css('background-color', dk_gray);
+          text_item.css('color', white);
         } else {
           panel_item.css('background-color', blue_gray);
+          panel_item.css('color', blue);
         } 
       });
       return a;
