@@ -25,11 +25,19 @@ dragoman.io = function(){
     ;
   };
 
+  var panel_divider = function() {
+    return div().attr('class', 'panel_divider')
+      .css('height', '100%')
+      .css('width', '2px')
+      .css('background-color', gray)
+      .css('display', 'inline-block')
+      .css('vertical-align', 'top')
+  };
+
   var panel_item = function(id) {
     return div().attr('id', id).attr('class', 'panel_item')
       .css('background-color', blue_gray)
-      .css('border-bottom', '2px solid ' + dk_gray)
-      .css('border-left', '2px solid ' + green)
+      .css('border-bottom', '2px solid ' + gray)
     ;
   };
 
@@ -89,7 +97,6 @@ dragoman.io = function(){
   var mod_panel_item = function(id, text) {
     return panel_item(id)
       .css('cursor', 'pointer')
-      .css('height', mod_height)
       .append(mod_text_item(text))
     ;
   };
@@ -110,20 +117,25 @@ dragoman.io = function(){
     ;
   };
 
-  var qword_div = function(qword, position, query_type) {
-
-    var d = div() 
-      .text(qword.text)
-      .attr('id', [qword.id, position, query_type].join('-')) 
-      .css('display', 'inline-block')
-      .css('vertical-align', 'top')
+  var qword_div = function() {
+    return div() 
       .css('color', white)
       .css('background-color', dk_gray)
-      .css('margin-left', '4px')
       .css('padding', '4px')
       .css('min-height', '19px')
       .css('min-width', '19px')
       .css('cursor', 'pointer')
+  };
+
+  var installed_qword_div = function(qword, position, query_type) {
+
+    var d = qword_div() 
+      .text(qword.text)
+      .attr('id', position + '-' + query_type) 
+      .attr('value', qword.id) 
+      .css('display', 'inline-block')
+      .css('vertical-align', 'top')
+      .css('margin-left', '4px')
       .click(function() {
         dragoman.state.change_qword_selection(position, query_type);
       })
@@ -135,10 +147,10 @@ dragoman.io = function(){
 
   };
 
-  var qword_divs = function(phrase_type, qwords) {
+  var installed_qword_divs = function(phrase_type, qwords) {
 
     return _.map(qwords, function(qword, index) {
-      return qword_div(qword, index, phrase_type);
+      return installed_qword_div(qword, index, phrase_type);
     });
   };
 
@@ -152,18 +164,12 @@ dragoman.io = function(){
 
   var organization_item = function(org) {
 
-
-    var rows = [
-
-    ] 
-    ;
-
     var rows = _.union(
 
       [ [ [table_text_item('name')], [text_input(org.name)] ] ],
 
       _.map(org.query, function(qwords, query_type) {
-        return [ [table_text_item(query_type)], qword_divs(query_type, qwords) ];
+        return [ [table_text_item(query_type)], installed_qword_divs(query_type, qwords) ];
       })
 
     );
@@ -227,6 +233,7 @@ dragoman.io = function(){
     };
 
     i.add_panel = function(panel) {
+      i.append(panel_divider())
       i.append(panel);
       return i;
     };
@@ -244,11 +251,11 @@ dragoman.io = function(){
         var panel_item = $(this);
         var text_item = panel_item.find('div.text_item').first();
         if (panel_item.attr('id') == id) {
-          text_item.css('background-color', dk_gray);
+          text_item.css('background-color', blue);
           text_item.css('color', white);
         } else {
-          panel_item.css('background-color', blue_gray);
-          panel_item.css('color', blue);
+          text_item.css('background-color', blue_gray);
+          text_item.css('color', blue);
         } 
       });
       return a;
@@ -287,12 +294,59 @@ dragoman.io = function(){
     
   };
 
+  var qword_option_div = function(qword) {
+    return qword_div()
+      .text(qword.text)
+      .attr('id', qword.id)
+      .css('background-color', gray)
+      .css('color', dk_gray)
+      .mouseenter(function() {
+        $(this).css('background-color', dk_gray)
+        $(this).css('color', gray)
+      })
+      .mouseleave(function() {
+        $(this).css('background-color', gray)
+        $(this).css('color', dk_gray)
+      })
+    ;
+
+  };
+
+  var qword_selection_div = function(qword_selection) {
+    var id = 'qword_selection';
+    $('#' + id).remove();
+    var d = div().attr('id', id)
+      .css('display', 'inline-block')
+      .css('vertical-align', 'top')
+      .css('border-bottom', '2px solid ' + white)
+      .css('border-left', '2px solid ' + white)
+      .css('position', 'absolute')
+      .css('z-index', '100')
+      ;
+
+    var position = qword_selection.position;
+    var query_type = qword_selection.query_type;
+    var qwords = qword_selection.qwords;
+
+    _.forEach(qwords, function(qword) {
+
+      d.append(qword_option_div(qword));
+
+
+    });
+
+    return d;
+  };
+
   var on_qword_selection_change = function(qword_selection) {
     if (edit_org_panel != null) {
-      alert(JSON.stringify(qword_selection));
-    } else {
-      alert('yikes...');
-    }
+
+      var position = qword_selection.position;
+      var query_type = qword_selection.query_type;
+      qword_selection_div(qword_selection)
+        .insertAfter('#' + position + '-' + query_type);
+
+    } 
   };
 
   var handler = {

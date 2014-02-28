@@ -96,20 +96,20 @@ dragoman.qword_selection = function(position, query_type) {
 
   var funcs = {
     grouping: function(position) {
-      return [all.done, all.contact, all.body, all.sender];
+      return [all.contact, all.body, all.sender];
     },
     filtering: function(position) {
-      return [all.done, all.contact, all.body, all.sender];
+      return [all.contact, all.body, all.sender];
     },
     preview: function(position) {
-      return [all.done, all.contact, all.body, all.sender];
+      return [all.contact, all.body, all.sender];
     }
   };
 
   var qwords = funcs[query_type](position);
 
   return {
-    postion: position,
+    position: position,
     query_type: query_type, 
     qwords: qwords 
   };
