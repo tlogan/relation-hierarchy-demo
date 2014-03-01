@@ -9,7 +9,7 @@ dragoman.state = function() {
   ], function (result, item) {
     result[item[0]] = dragoman.host(item[1]);
     return result;
-  });
+  }, {});
 
   var accounts = _.reduce([
       ['erika_gmail', 'erika', hosts.gmail],
@@ -24,7 +24,7 @@ dragoman.state = function() {
   ], function (result, item) {
     result[item[0]] = dragoman.account(item[1], item[2]);
     return result;
-  });
+  }, {});
 
   var protocols = _.reduce([
     'smtp',
@@ -35,7 +35,7 @@ dragoman.state = function() {
   ], function (result, item) {
     result[item] = dragoman.protocol(item);
     return result;
-  });
+  }, {});
   
   var account_protocols = _.reduce([
       ['erika_gmail_smtp', accounts.erika_gmail, protocols.smtp],
@@ -53,7 +53,7 @@ dragoman.state = function() {
   ], function (result, item) {
     result[item[0]] = dragoman.account_protocol(item[1], item[2]);
     return result;
-  });
+  }, {});
 
   var aps = account_protocols;
   var xmpp_send_subscriptions = _.reduce([
@@ -70,7 +70,7 @@ dragoman.state = function() {
   ], function (result, item) {
     result[item[0]] = dragoman.subscription(item[1], item[2]);
     return result;
-  });
+  }, {});
 
   var contacts = _.reduce([
     ['erika', 'Erika'],
@@ -79,7 +79,7 @@ dragoman.state = function() {
   ], function (result, item) {
     result[item[0]] = dragoman.contact(item[1]);
     return result;
-  });
+  }, {});
 
   var account_protocol_contacts = _.reduce([
     ['erika_gmail_smtp_erika', aps.erika_gmail_smtp, contacts.erika],
@@ -92,7 +92,7 @@ dragoman.state = function() {
   ], function (result, item) {
     result[item[0]] = dragoman.account_protocol_contact(item[1], item[2]);
     return result;
-  });
+  }, {});
 
   var messages = _.reduce([
     ['m1', aps.erika_gmail_smtp, aps.siiri_facebook_smtp, 1, true, 'Hey Pookey!'],
@@ -108,7 +108,118 @@ dragoman.state = function() {
   ], function (result, item) {
     result[item[0]] = dragoman.message(item[1], item[2], item[3], item[4], item[5]);
     return result;
+  }, {});
+
+
+
+
+
+
+  var addresses = function() {
+    return _.reduce(accounts, function(account, id) {
+      result[id] = dragoman.qword(id, account.name + '@' + account.host.name);
+      return result;
+    });
+  };
+
+    
+  var attr_value_qwords = _.reduce([
+    ['sender_name', 'sender name', function() {
+      return _.reduce(contacts, function(result, contact, id) {
+        result[id] = dragoman.qword(id, contact.name);
+        return result;
+      }, {});
+    }],
+    ['sender_address', 'sender address', addresses],
+    ['receiver_address', 'receiver address', addresses],
+    ['read', 'read', function() {
+      return {
+        yes: dragoman.qword('yes', 'yes'),
+        no: dragoman.qword('no', 'no')
+      };
+    }]
+  ], function (result, item) {
+
+    var attr_qword = dragoman.qword(item[0], item[1]);
+    var value_qwords = item[2]; 
+
+    result[item[0]] = dragoman.attr_qword_value_qwords(attr_qword, value_qwords);
+    return result;
+
+  }, {});
+
+  //attribute qwords whose values are of a finite set
+  var closed_attr_qwords = _.map(attr_value_qwords, function(item) {
+    return item.attr_qword; 
   });
+
+
+  var all_qwords = _.assign(
+    _.reduce([
+      ['intersection', 'x'],
+      ['union', '+'],
+      ['nest', '/'],
+      ['equal', '='],
+      ['done', ''],
+      ['body', 'body'],
+    ], function (result, item) {
+      result[item[0]] = dragoman.qword(item[0], item[1]);
+      return result;
+    }),
+    _.reduce(closed_attr_qwords, function (result, attr_qword) {
+      result[attr_qword.id] = attr_qword;
+      return result;
+    })
+  );
+
+  var grouping_selection = function(position, phrase) {
+
+    if (position == 0) {
+      return  _.union([all_qwords.done], closed_attr_qwords);
+    } else {
+      var ss = [
+        _.union([all_qwords.done], closed_attr_qwords),
+        [all_qwords.done, all_qwords.nest, all_qwords.union, all_qwords.intersection]
+      ];
+      return ss[position % 2];
+    }
+
+  };
+
+  var filtering_selection = function(position, phrase) {
+
+    if (position == 0) {
+      return  _.union([all_qwords.done], closed_attr_qwords);
+    } else {
+
+      value_qwords = attr_value_qwords[phrase[postion - 1].id].value_qwords();
+
+      var ss = [
+        closed_attr_qwords,
+        value_qwords,
+        [all_qwords.done, all_qwords.union, all_qwords.intersection]
+      ];
+
+      return ss[position % 3];
+    }
+
+
+  };
+
+  var preview_selection = function(position, phrase) {
+    var ss = [
+      _.union([all_qwords.body], closed_attr_qwords),
+      [all_qwords.done, all_qwords.union]
+    ];
+
+    return ss[position % 2];
+  };
+
+  var selections = {
+    grouping: grouping_selection,
+    filtering: filtering_selection,
+    preview: preview_selection
+  };
 
 
 
@@ -128,9 +239,9 @@ dragoman.state = function() {
       'new',
       '',
       dragoman.query(
-        [dragoman.qwords.done], 
-        [dragoman.qwords.done], 
-        [dragoman.qwords.body, dragoman.qwords.done]
+        [all_qwords.done], 
+        [all_qwords.done], 
+        [all_qwords.body, all_qwords.done]
       )
     );
 
@@ -177,8 +288,9 @@ dragoman.state = function() {
       alert('error: edit_org is null in change_qword_selection');
     }
 
-    var query = edit_org.query[query_type];
-    set_qword_selection(dragoman.qword_selection(position, query_type, query)); 
+    var query_phrase = edit_org.query[query_type];
+    var qwords = selections[query_type](position, query_phrase);
+    set_qword_selection(dragoman.qword_selection(position, query_type, qwords)); 
 
   }
 

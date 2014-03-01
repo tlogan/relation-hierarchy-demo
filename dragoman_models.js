@@ -62,83 +62,20 @@ dragoman.qword = function(id, text) { return {
   text: text  
 };};
 
+dragoman.attr_qword_value_qwords = function(attr_qword, value_qwords) { return {
+  attr_qword: attr_qword,
+  value_qwords: value_qwords
+};};
+
 dragoman.org_data = function(org, data, options) { return {
   org: org,
   data: data, 
   options: options
 };};
 
-dragoman.qwords = function() {
-
-  return _.reduce([
-    ['intersection', 'x'],
-    ['union', '+'],
-    ['nest', '/'],
-    ['equal', '='],
-    ['done', ''],
-
-    ['contact', 'contact'],
-    ['body', 'body'],
-    ['sender', 'sender'],
-    ['receiver', 'receiver'],
-    ['time', 'time'],
-    ['read', 'read']
-  ], function (result, item) {
-    result[item[0]] = dragoman.qword(item[0], item[1]);
-    return result;
-  });
-
-}();
-
-
-dragoman.qword_selection = function(position, query_type, query) { 
-
-  var all = dragoman.qwords;
-
-  var attrs = [all.contact, all.body, all.sender, all.receiver, all.time, all.read];
-
-
-  var grouping_selection = function() {
-
-    if (position == 0) {
-      return  _.union([all.done], attrs);
-    } else {
-      var ss = [
-        _.union([all.done], attrs),
-        [all.done, all.nest, all.union, all.intersection]
-      ];
-      return ss[position % 2];
-    }
-
-  };
-
-  var filtering_selection = function() {
-
-    return [all.contact, all.body, all.sender];
-
-  };
-
-  var preview_selection = function() {
-    var ss = [
-      attrs,
-      [all.done, all.union]
-    ];
-
-    return ss[position % 2];
-  };
-
-  var selections = {
-    grouping: grouping_selection,
-    filtering: filtering_selection,
-    preview: preview_selection
-  };
-
-  var qwords = selections[query_type]();
-
-  return {
+dragoman.qword_selection = function(position, query_type, qwords) { return {
     position: position,
     query_type: query_type, 
     qwords: qwords 
-  };
-};
+};};
 
