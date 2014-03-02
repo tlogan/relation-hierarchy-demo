@@ -124,15 +124,15 @@ dragoman.state = function() {
 
     
   var attr_value_qwords = _.reduce([
-    ['sender_name', 'sender name', function() {
+    ['sender_name', 'Sender Name', function() {
       return _.reduce(contacts, function(result, contact, id) {
         result[id] = dragoman.qword(id, contact.name);
         return result;
       }, {});
     }],
-    ['sender_address', 'sender address', addresses],
-    ['receiver_address', 'receiver address', addresses],
-    ['read', 'read', function() {
+    ['sender_address', 'Sender Address', addresses],
+    ['receiver_address', 'Receiver Address', addresses],
+    ['read', 'Read', function() {
       return {
         yes: dragoman.qword('yes', 'yes'),
         no: dragoman.qword('no', 'no')
@@ -161,7 +161,7 @@ dragoman.state = function() {
       ['nest', '/'],
       ['equal', '='],
       ['done', ''],
-      ['body', 'body'],
+      ['body', 'Body'],
     ], function (result, item) {
       result[item[0]] = dragoman.qword(item[0], item[1]);
       return result;
@@ -172,7 +172,7 @@ dragoman.state = function() {
     })
   );
 
-  var grouping_selection = function(position, phrase) {
+  var groups_selection = function(position, phrase) {
 
     if (position == 0) {
       return  _.union([all_qwords.done], closed_attr_qwords);
@@ -186,7 +186,7 @@ dragoman.state = function() {
 
   };
 
-  var filtering_selection = function(position, phrase) {
+  var filters_selection = function(position, phrase) {
 
     if (position == 0) {
       return  _.union([all_qwords.done], closed_attr_qwords);
@@ -216,8 +216,8 @@ dragoman.state = function() {
   };
 
   var selections = {
-    grouping: grouping_selection,
-    filtering: filtering_selection,
+    groups: groups_selection,
+    filters: filters_selection,
     preview: preview_selection
   };
 
@@ -236,7 +236,7 @@ dragoman.state = function() {
 
   var new_org = 
     dragoman.organization(
-      'new',
+      'New',
       '',
       dragoman.query(
         [all_qwords.done], 

@@ -45,9 +45,9 @@ dragoman.message = function(sender, receiver, time, read, body) { return {
 };};
 
 
-dragoman.query = function(grouping, filtering, preview) { return {
-  grouping: grouping,
-  filtering: filtering,
+dragoman.query = function(groups, filters, preview) { return {
+  groups: groups,
+  filters: filters,
   preview: preview
 };};
 

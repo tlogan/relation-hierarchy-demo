@@ -5,8 +5,8 @@ dragoman.io = function(){
   };
   var mod_height = '50px';
   var blue = '#77b';
-  var green = '#7b7'; 
-  var dk_gray = '#aaa';
+  var green = '#7b7';
+  var dk_gray = '#999';
   var gray = '#ddd';
   var blue_gray = '#eef';
   var white = '#fff';
@@ -92,7 +92,7 @@ dragoman.io = function(){
   var qword_div = function() {
     return div() 
       .css('color', white)
-      .css('background-color', dk_gray)
+      .css('background-color', green)
       .css('padding', '4px')
       .css('min-height', '19px')
       .css('min-width', '19px')
@@ -124,10 +124,15 @@ dragoman.io = function(){
 
   var table_text_item = function(text) {
     return text_item(text)
-      .css('background-color', green)
-      .css('color', white)
+      .css('color', dk_gray)
       .css('text-align', 'right')
       .css('padding', '4px');
+  };
+
+  var capitalized = function(string) {
+    var first = string.substring(0, 1).toUpperCase();
+    var rest = string.substring(1);
+    return first + rest;
   };
 
   var edit_org_item = function(org) {
@@ -135,11 +140,11 @@ dragoman.io = function(){
 
     var rows = _.union(
 
-      [ tr().append(td().append(table_text_item('name')), td().append(text_input(org.name))) ],
+      [ tr().append(td().append(table_text_item('Name')), td().append(text_input(org.name))) ],
 
       _.map(org.query, function(qwords, query_type) {
         return tr().append( 
-          td().append(table_text_item(query_type)), 
+          td().append(table_text_item(capitalized(query_type))), 
           td().append(installed_qword_divs(query_type, qwords)) 
         );
       })
@@ -147,7 +152,7 @@ dragoman.io = function(){
     );
 
     return panel_item('edit_org_item')
-      .append(mod_text_item('message organization settings')
+      .append(mod_text_item('Message Organization Settings')
         .css('background-color', blue)
         .css('color', white)
       )
@@ -174,17 +179,19 @@ dragoman.io = function(){
     var i = $('#io')
       .css('font-family', 'sans-serif')
       .css('color', white)
-      .css('background-color', dk_gray)
+      .css('background-color', gray)
       .css('height', '100%')
       .append(div().attr('id', 'control_bar')
         .css('height', mod_height)
-        .css('background-color', green)
+        .css('background-color', gray)
       )
       .append(panel('anchor_panel'))
-
       ;
 
     i.remove_panels = function() {
+      i.find('div.panel_divider').each(function(index) {
+          $(this).remove();
+      }); 
       i.find('div.panel').each(function(index) {
         if (index > 0) {
           $(this).remove();
