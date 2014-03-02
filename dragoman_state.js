@@ -236,7 +236,7 @@ dragoman.state = function() {
 
   var new_org = 
     dragoman.organization(
-      'New',
+      'new',
       '',
       dragoman.query(
         [all_qwords.done], 
@@ -292,12 +292,46 @@ dragoman.state = function() {
     var qwords = selections[query_type](position, query_phrase);
     set_qword_selection(dragoman.qword_selection(position, query_type, qwords)); 
 
-  }
+  };
+
+  var replace_qword = function(qword, position, query_type) {
+
+    var old_phrase = edit_org.query[query_type];
+    if (qword != old_phrase[position]) {
+
+      var new_phrase = _.union(
+        old_phrase.slice(0, position),
+        qword,
+        old_phrase.slice(position + 1)
+      );
+
+      var new_query = dragoman.query(
+        edit_org.query.groups, 
+        edit_org.query.filters, 
+        edit_org.query.preview 
+      );
+      new_query[query_type] = new_phrase;
+      
+      var org = dragoman.organization(
+        edit_org.id,
+        edit_org.name,
+        new_query
+      );
+
+      set_edit_org(org);
+
+
+    }
+
+    set_qword_selection(null); 
+
+  };
 
   return {
     subscribe: subscribe,
     create_new_organization: create_new_organization,
-    change_qword_selection: change_qword_selection 
+    change_qword_selection: change_qword_selection,
+    replace_qword: replace_qword
   };
 
 }();
