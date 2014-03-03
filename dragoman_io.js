@@ -101,7 +101,7 @@ dragoman.io = function(){
     return div() 
       .css('class', 'qword')
       .css('color', white)
-      .css('padding', '4px')
+      .css('padding', '2px 4px')
       .css('min-height', '19px')
       .css('min-width', '8px')
       .css('cursor', 'pointer')
@@ -115,9 +115,9 @@ dragoman.io = function(){
       .attr('value', qword.id) 
       .css('display', 'inline-block')
       .css('vertical-align', 'top')
-      .css('margin-left', '4px')
-      .css('margin-top', '2px')
-      .css('margin-bottom', '2px')
+      .css('margin-left', '2px')
+      .css('margin-top', '1px')
+      .css('margin-bottom', '1px')
       .css('background-color', green)
       .click(function() {
         dragoman.state.change_qword_selection(position, query_type);
@@ -139,8 +139,8 @@ dragoman.io = function(){
     return text_item(text)
       .css('color', dk_gray)
       .css('text-align', 'right')
-      .css('margin', '2px')
-      .css('padding', '4px');
+      .css('margin', '1px')
+      .css('padding', '2px 4px');
   };
 
   var capitalized = function(string) {
@@ -155,8 +155,8 @@ dragoman.io = function(){
 
       [ tr().append(td().append(table_text_item('Name')), 
         td().append(text_input(org.name)
-          .css('margin', '2px')
-          .css('margin-left', '4px')
+          .css('margin', '1px')
+          .css('margin-left', '2px')
           )) ],
 
       _.map(org.query, function(query_phrase, query_type_id) {
@@ -314,7 +314,7 @@ dragoman.io = function(){
         .css('display', 'inline-block')
         .css('vertical-align', 'top')
         .css('position', 'absolute')
-        .css('margin-top', '2px')
+        .css('margin-top', '1px')
         .css('z-index', '100')
         ;
 
