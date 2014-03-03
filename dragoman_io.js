@@ -54,15 +54,22 @@ dragoman.io = function(){
   };
 
   var table = function() {
-    return $('<table></table>');
+    return $('<table></table>')
+      .css('border-collapse', 'collapse')
+      .css('margin', '4px')
+      ;
   };
 
   var tr = function() {
-    return $('<tr></tr>');
+    return $('<tr></tr>')
+      .css('margin', '0px')
+      ;
   };
 
   var td = function() {
-    return $('<td></td>').css('color', blue);
+    return $('<td></td>').css('color', blue)
+      .css('padding', '0px')
+      ;
   };
 
 
@@ -77,9 +84,8 @@ dragoman.io = function(){
     return $('<input type="text"/>')
       .attr('value', value)
       .css('font-size', 'inherit')
-      .css('padding', '2px')
       .css('outline', 'none')
-      .css('border', 'none')
+      .css('padding', '5px')
       .css('border', '1px solid ' + dk_gray)
       .focus(function() {
         $(this).css('border', '1px solid ' + green)
@@ -94,7 +100,6 @@ dragoman.io = function(){
     return div() 
       .css('class', 'qword')
       .css('color', white)
-      .css('background-color', green)
       .css('padding', '4px')
       .css('min-height', '19px')
       .css('min-width', '19px')
@@ -103,7 +108,6 @@ dragoman.io = function(){
 
   var installed_qword_div = function(qword, position, query_type) {
 
-
     return qword_div() 
       .text(qword.text)
       .attr('id', position + '-' + query_type) 
@@ -111,17 +115,22 @@ dragoman.io = function(){
       .css('display', 'inline-block')
       .css('vertical-align', 'top')
       .css('margin-left', '4px')
+      .css('margin-top', '2px')
+      .css('margin-bottom', '2px')
+      .css('background-color', green)
       .click(function() {
         dragoman.state.change_qword_selection(position, query_type);
-      })
-    ;
+      });
+    
 
   };
 
   var installed_qword_divs = function(phrase_type, qwords) {
 
     return _.map(qwords, function(qword, index) {
-      return installed_qword_div(qword, index, phrase_type);
+      var l = qwords.length;
+      var clickable = (index == l - 1) || (index == l - 2);
+      return installed_qword_div(qword, index, phrase_type, clickable);
     });
   };
 
@@ -143,12 +152,17 @@ dragoman.io = function(){
 
     var rows = _.union(
 
-      [ tr().append(td().append(table_text_item('Name')), td().append(text_input(org.name))) ],
+      [ tr().append(td().append(table_text_item('Name')), 
+        td().append(text_input(org.name)
+          .css('margin', '2px')
+          .css('margin-left', '4px')
+          )) ],
 
-      _.map(org.query, function(qwords, query_type) {
+      _.map(org.query, function(query_phrase, query_type_id) {
+        var qwords = query_phrase.qwords;
         return tr().append( 
-          td().append(table_text_item(capitalized(query_type))), 
-          td().append(installed_qword_divs(query_type, qwords)) 
+          td().append(table_text_item(capitalized(query_type_id))), 
+          td().append(installed_qword_divs(query_type_id, qwords)) 
         );
       })
 
@@ -205,7 +219,7 @@ dragoman.io = function(){
   var io = function() {
 
     var i = $('#io')
-      .css('font-family', 'sans-serif')
+      .css('font-family', 'monospace')
       .css('color', white)
       .css('background-color', gray)
       .css('height', '100%')
@@ -306,7 +320,10 @@ dragoman.io = function(){
       var query_type = qword_selection.query_type;
       var qwords = qword_selection.qwords;
 
+
       _.forEach(qwords, function(qword) {
+
+        alert(JSON.stringify(qword))
 
         d.append(qword_option_div(qword, position, query_type));
 

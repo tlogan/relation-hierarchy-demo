@@ -44,13 +44,6 @@ dragoman.message = function(sender, receiver, time, read, body) { return {
   body: body 
 };};
 
-
-dragoman.query = function(groups, filters, preview) { return {
-  groups: groups,
-  filters: filters,
-  preview: preview
-};};
-
 dragoman.organization = function(id, name, query) { return {
   id: id,
   name: name,
@@ -79,3 +72,30 @@ dragoman.qword_selection = function(position, query_type, qwords) { return {
     qwords: qwords 
 };};
 
+//takes a query phrase of each type
+dragoman.query = function(groups_phrase, filters_phrase, preview_phrase) { return {
+  groups: groups_phrase,
+  filters: filters_phrase,
+  preview: preview_phrase
+};};
+
+//selection is a function
+dragoman.query_type = function(id, selection) { return {
+  id: id,
+  selection: selection
+};};
+
+dragoman.query_phrase = function(query_type, qwords) { 
+
+  var selection = function(position) {
+    var prev_qword = qwords[position - 1];
+    return query_type.selection(position, prev_qword);
+  };
+  
+  return {
+    query_type: query_type,
+    qwords: qwords,  
+    selection: selection
+  };
+
+};

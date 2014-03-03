@@ -111,117 +111,104 @@ dragoman.state = function() {
   }, {});
 
 
+  var attr_value_qwords = function() {
 
-
-
-
-  var addresses = function() {
-    return _.reduce(accounts, function(account, id) {
-      result[id] = dragoman.qword(id, account.name + '@' + account.host.name);
-      return result;
-    });
-  };
-
-    
-  var attr_value_qwords = _.reduce([
-    ['sender_name', 'Sender Name', function() {
-      return _.reduce(contacts, function(result, contact, id) {
-        result[id] = dragoman.qword(id, contact.name);
+    var addresses = function() {
+      return _.reduce(accounts, function(result, account, id) {
+        result[id] = dragoman.qword(id, account.name + '@' + account.host.name);
         return result;
       }, {});
-    }],
-    ['sender_address', 'Sender Address', addresses],
-    ['receiver_address', 'Receiver Address', addresses],
-    ['read', 'Read', function() {
-      return {
-        yes: dragoman.qword('yes', 'yes'),
-        no: dragoman.qword('no', 'no')
-      };
-    }]
+    };
+
+    return _.reduce([
+      ['sender_name', 'Sender Name', function() {
+        return _.reduce(contacts, function(result, contact, id) {
+          result[id] = dragoman.qword(id, contact.name);
+          return result;
+        }, {});
+      }],
+      ['sender_address', 'Sender Address', addresses],
+      ['receiver_address', 'Receiver Address', addresses],
+      ['read', 'Read', function() {
+        return {
+          yes: dragoman.qword('yes', 'yes'),
+          no: dragoman.qword('no', 'no')
+        };
+      }]
+    ], function (result, item) {
+
+      var attr_qword = dragoman.qword(item[0], item[1]);
+      var value_qwords = item[2]; 
+
+      result[attr_qword.id] = dragoman.attr_qword_value_qwords(attr_qword, value_qwords);
+      return result;
+
+    }, {});
+
+  }();
+
+
+  var open_attr_qwords = _.reduce([
+    ['body', 'Body']
   ], function (result, item) {
-
-    var attr_qword = dragoman.qword(item[0], item[1]);
-    var value_qwords = item[2]; 
-
-    result[item[0]] = dragoman.attr_qword_value_qwords(attr_qword, value_qwords);
+    result[item[0]] = dragoman.qword(item[0], item[1]);
     return result;
-
   }, {});
 
-  //attribute qwords whose values are of a finite set
-  var closed_attr_qwords = _.map(attr_value_qwords, function(item) {
-    return item.attr_qword; 
+  var conj_qwords = _.reduce([
+    ['intersection', 'x'],
+    ['union', '+'],
+    ['nest', '/'],
+    ['done', '']
+  ], function (result, item) {
+    result[item[0]] = dragoman.qword(item[0], item[1]);
+    return result;
+  }, {});
+
+  var closed_attr_qwords = _.map(attr_value_qwords, function(av) {
+    return av.attr_qword;
   });
 
+  var query_types = _.reduce([
+    ['groups', function(position, prev_qword) {
+      if (position == 0) {
+        return  _.union([conj_qwords.done], closed_attr_qwords);
+      } else {
+        var ss = [
+          _.union([conj_qwords.done], closed_attr_qwords),
+          [conj_qwords.done, conj_qwords.nest, conj_qwords.union, conj_qwords.intersection]
+        ];
+        return ss[position % 2];
+      }
+    }],
+    ['filters', function(position, prev_qword) {
 
-  var all_qwords = _.assign(
-    _.reduce([
-      ['intersection', 'x'],
-      ['union', '+'],
-      ['nest', '/'],
-      ['equal', '='],
-      ['done', ''],
-      ['body', 'Body'],
-    ], function (result, item) {
-      result[item[0]] = dragoman.qword(item[0], item[1]);
-      return result;
-    }),
-    _.reduce(closed_attr_qwords, function (result, attr_qword) {
-      result[attr_qword.id] = attr_qword;
-      return result;
-    })
-  );
+      if (position == 0) {
+        return  _.union([conj_qwords.done], closed_attr_qwords);
+      } else if (position % 3 == 0) {
+        return closed_attr_qwords;
+      } else if (position % 3 == 1) {
+        return _.map(attr_value_qwords[prev_qword.id].value_qwords(), function(qword) {
+          return qword;
+        });
+      } else {
+        return [conj_qwords.done, conj_qwords.union, conj_qwords.intersection];
+      }
 
-  var groups_selection = function(position, phrase) {
-
-    if (position == 0) {
-      return  _.union([all_qwords.done], closed_attr_qwords);
-    } else {
+    }],
+    ['preview', function(position, prev_qword) {
       var ss = [
-        _.union([all_qwords.done], closed_attr_qwords),
-        [all_qwords.done, all_qwords.nest, all_qwords.union, all_qwords.intersection]
+        _.union(open_attr_qwords, closed_attr_qwords),
+        [conj_qwords.done, conj_qwords.union]
       ];
+
       return ss[position % 2];
-    }
+    }]
 
-  };
-
-  var filters_selection = function(position, phrase) {
-
-    if (position == 0) {
-      return  _.union([all_qwords.done], closed_attr_qwords);
-    } else {
-
-      value_qwords = attr_value_qwords[phrase[postion - 1].id].value_qwords();
-
-      var ss = [
-        closed_attr_qwords,
-        value_qwords,
-        [all_qwords.done, all_qwords.union, all_qwords.intersection]
-      ];
-
-      return ss[position % 3];
-    }
-
-
-  };
-
-  var preview_selection = function(position, phrase) {
-    var ss = [
-      _.union([all_qwords.body], closed_attr_qwords),
-      [all_qwords.done, all_qwords.union]
-    ];
-
-    return ss[position % 2];
-  };
-
-  var selections = {
-    groups: groups_selection,
-    filters: filters_selection,
-    preview: preview_selection
-  };
-
-
+  ], function (result, item) {
+    result[item[0]] = dragoman.query_type(item[0], item[1]);
+    return result;
+  }, {});
 
   //////////////////
 
@@ -233,17 +220,18 @@ dragoman.state = function() {
     });
   };
 
-
-  var new_org = 
-    dragoman.organization(
-      'new',
-      '',
-      dragoman.query(
-        [all_qwords.done], 
-        [all_qwords.done], 
-        [all_qwords.body, all_qwords.done]
+  var new_org = dragoman.organization(
+    'new',
+    '',
+    dragoman.query(
+      dragoman.query_phrase(query_types.groups,[conj_qwords.done]), 
+      dragoman.query_phrase(query_types.filters,[conj_qwords.done]), 
+      dragoman.query_phrase(
+        query_types.preview, 
+        [open_attr_qwords.body, conj_qwords.done] 
       )
-    );
+    )
+  );
 
 
   var organizations = {};
@@ -281,37 +269,49 @@ dragoman.state = function() {
     set_edit_org(new_org);
   };
 
-
   var change_qword_selection = function(position, query_type) {
 
     if (edit_org == null) {
       alert('error: edit_org is null in change_qword_selection');
     }
 
-    var query_phrase = edit_org.query[query_type];
-    var qwords = selections[query_type](position, query_phrase);
+    var qwords = edit_org.query[query_type].selection(position);
     set_qword_selection(dragoman.qword_selection(position, query_type, qwords)); 
 
   };
 
-  var replace_qword = function(qword, position, query_type) {
+  var replace_qword = function(qword, position, query_type_id) {
 
-    var old_phrase = edit_org.query[query_type];
-    if (qword != old_phrase[position]) {
+    var query_phrase = edit_org.query[query_type_id];
+    var old_qwords = query_phrase.qwords;
+    if (qword != old_qwords[position]) {
 
-      var new_phrase = _.union(
-        old_phrase.slice(0, position),
-        qword,
-        old_phrase.slice(position + 1)
-      );
+      var query_type = query_types[query_type_id]; 
+
+      var start = old_qwords.slice(0, position);
+      var length = old_qwords.length;
+      var new_qwords = function() {
+        if (qword == conj_qwords.done) {
+          return _.union(start, qword);
+        } else {
+          var next_word = query_type.selection(position + 1, qword)[0];
+          if (next_word != conj_qwords.done) {
+            return _.union(start, qword, next_word, conj_qwords.done);
+          } else {
+            return _.union(start, qword, next_word);
+          }
+        }
+      }();
+
+
 
       var new_query = dragoman.query(
         edit_org.query.groups, 
         edit_org.query.filters, 
         edit_org.query.preview 
       );
-      new_query[query_type] = new_phrase;
-      
+      new_query[query_type_id] = dragoman.query_phrase(query_type, new_qwords);
+
       var org = dragoman.organization(
         edit_org.id,
         edit_org.name,
