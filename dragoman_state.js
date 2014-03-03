@@ -175,7 +175,7 @@ dragoman.state = function() {
         return  _.union([conj_qwords.done], closed_attr_qwords);
       } else {
         var ss = [
-          _.union([conj_qwords.done], closed_attr_qwords),
+          closed_attr_qwords,
           [conj_qwords.done, conj_qwords.nest, conj_qwords.union, conj_qwords.intersection]
         ];
         return ss[position % 2];
@@ -291,16 +291,38 @@ dragoman.state = function() {
       var start = old_qwords.slice(0, position);
       var length = old_qwords.length;
       var new_qwords = function() {
-        if (qword == conj_qwords.done) {
-          return _.union(start, qword);
-        } else {
-          var next_word = query_type.selection(position + 1, qword)[0];
-          if (next_word != conj_qwords.done) {
-            return _.union(start, qword, next_word, conj_qwords.done);
+
+
+        if (qword != conj_qwords.done && position != length - 1) {
+
+          if (query_type == query_types.filters && position % 3 == 0) {
+
+            var next = query_type.selection(position + 1, qword)[0];
+            var end = old_qwords.slice(position + 2);
+            return _.flatten([start, qword, next, end]);
+
           } else {
-            return _.union(start, qword, next_word);
+            var end = old_qwords.slice(position + 1);
+            return _.flatten([start, qword, end]);
           }
+
+
+        } else {
+          var end = [];
+          var pos = position + 1;
+          var word = qword;
+
+          while (word != conj_qwords.done && pos < position + 4) {
+
+            word = query_type.selection(pos, word)[0];
+            end.push(word);
+            pos = pos + 1;
+
+          }
+
+          return _.flatten([start, qword, end]);
         }
+
       }();
 
 
@@ -310,6 +332,7 @@ dragoman.state = function() {
         edit_org.query.filters, 
         edit_org.query.preview 
       );
+
       new_query[query_type_id] = dragoman.query_phrase(query_type, new_qwords);
 
       var org = dragoman.organization(

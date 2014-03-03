@@ -129,9 +129,9 @@ dragoman.io = function(){
 
     return _.map(qwords, function(qword, index) {
       var l = qwords.length;
-      var clickable = (index == l - 1) || (index == l - 2);
-      return installed_qword_div(qword, index, phrase_type, clickable);
+      return installed_qword_div(qword, index, phrase_type);
     });
+
   };
 
   var table_text_item = function(text) {
@@ -148,7 +148,6 @@ dragoman.io = function(){
   };
 
   var edit_org_item = function(org) {
-
 
     var rows = _.union(
 
