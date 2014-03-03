@@ -68,6 +68,7 @@ dragoman.io = function(){
 
   var td = function() {
     return $('<td></td>').css('color', blue)
+      .css('vertical-align', 'top')
       .css('padding', '0px')
       ;
   };
@@ -102,7 +103,7 @@ dragoman.io = function(){
       .css('color', white)
       .css('padding', '4px')
       .css('min-height', '19px')
-      .css('min-width', '19px')
+      .css('min-width', '8px')
       .css('cursor', 'pointer')
   };
 
@@ -138,6 +139,7 @@ dragoman.io = function(){
     return text_item(text)
       .css('color', dk_gray)
       .css('text-align', 'right')
+      .css('margin', '2px')
       .css('padding', '4px');
   };
 
@@ -312,6 +314,7 @@ dragoman.io = function(){
         .css('display', 'inline-block')
         .css('vertical-align', 'top')
         .css('position', 'absolute')
+        .css('margin-top', '2px')
         .css('z-index', '100')
         ;
 
