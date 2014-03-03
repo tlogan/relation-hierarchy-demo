@@ -86,7 +86,7 @@ dragoman.io = function(){
       .attr('value', value)
       .css('font-size', 'inherit')
       .css('outline', 'none')
-      .css('padding', '5px')
+      .css('padding', '3px')
       .css('border', '1px solid ' + dk_gray)
       .focus(function() {
         $(this).css('border', '1px solid ' + green)
