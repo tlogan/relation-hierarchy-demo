@@ -362,27 +362,31 @@ dragoman.state = function() {
   };
 
   var save_organization = function() {
-    var _organizations = null;
 
     if (edit_org.id == new_org.id) {
-      var id = organizations.length; 
+      var id = 'org_' + organizations.length; 
       var org = dragoman.organization(
         id,
         edit_org.name,
         edit_org.query
       );
       set_edit_org(org);
-      _organizations = _.flatten([organizations, org]);
+      var _organizations = _.flatten([organizations, org]);
+      set_organizations(_organizations);
+      set_foc_org(org);
     } else {
 
-      var start = organizations.slice(0, edit_org.id);
-      var end = organizations.slice(edit_org.id + 1);
 
-      _organizations = _.flatten([start, edit_org, end]);
+      var index = edit_org.id.substring(4);
+      var start = organizations.slice(0, index);
+      var end = organizations.slice(index + 1);
+
+      var _organizations = _.flatten([start, edit_org, end]);
+      set_organizations(_organizations);
+      set_foc_org(edit_org);
 
     }
 
-    set_organizations(_organizations);
 
   };
 

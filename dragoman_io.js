@@ -251,7 +251,7 @@ dragoman.io = function(){
     a.add_items = function(orgs) {
 
       _.forEach(orgs, function(org) {
-        var id = 'org-' + org.id;
+        var id = org.id;
         anchor_panel.append(mod_panel_item(id, org.name)
           .click(function() {
             //dragoman.state....()
