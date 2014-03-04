@@ -16,7 +16,6 @@ dragoman.io = function(){
       .css('background-color', gray)
       .css('display', 'inline-block')
       .css('vertical-align', 'top')
-      .css('height', body.height - 19 + 'px')
   };
 
   var panel = function(id) {
@@ -46,10 +45,10 @@ dragoman.io = function(){
   var mod_text_item = function(text) {
     return text_item(text) 
       .css('color', blue)
-      .css('padding-top', '16px')
+      .css('padding-top', '12px')
       .css('padding-left', '16px')
-      .css('padding-bottom', '16px')
-      .css('min-height', '19px')
+      .css('padding-bottom', '12px')
+      .css('min-height', '15px')
     ;
   };
 
@@ -97,27 +96,12 @@ dragoman.io = function(){
     ;
   };
 
-  var qword_div = function() {
-    return div() 
-      .css('class', 'qword')
-      .css('color', white)
-      .css('padding', '2px 4px')
-      .css('min-height', '19px')
-      .css('min-width', '8px')
-      .css('cursor', 'pointer')
-  };
 
   var installed_qword_div = function(qword, position, query_type) {
 
-    return qword_div() 
-      .text(qword.text)
+    return row_button(qword.text) 
       .attr('id', position + '-' + query_type) 
       .attr('value', qword.id) 
-      .css('display', 'inline-block')
-      .css('vertical-align', 'top')
-      .css('margin-left', '2px')
-      .css('margin-top', '1px')
-      .css('margin-bottom', '1px')
       .css('background-color', green)
       .click(function() {
         dragoman.state.change_qword_selection(position, query_type);
@@ -126,11 +110,11 @@ dragoman.io = function(){
 
   };
 
-  var installed_qword_divs = function(phrase_type, qwords) {
+  var installed_qword_divs = function(query_type, qwords) {
 
     return _.map(qwords, function(qword, index) {
       var l = qwords.length;
-      return installed_qword_div(qword, index, phrase_type);
+      return installed_qword_div(qword, index, query_type);
     });
 
   };
@@ -155,6 +139,12 @@ dragoman.io = function(){
 
       [ tr().append(td().append(table_text_item('Name')), 
         td().append(text_input(org.name)
+          .keypress(function() {
+            dragoman.state.change_edit_org_name($(this).val())
+          })
+          .keyup(function() {
+            dragoman.state.change_edit_org_name($(this).val())
+          })
           .css('margin', '1px')
           .css('margin-left', '2px')
           )) ],
@@ -180,12 +170,49 @@ dragoman.io = function(){
           .css('padding-bottom', '4px')
           .append(rows)
       )
+      .append(
+        div()
+          .css('boder', '1px solid black')
+          .css('padding-left', '4px')
+          .css('padding-top', '4px')
+          .css('padding-bottom', '4px')
+          .append(
+            row_button('Save')
+              .click(function() {
+                dragoman.state.save_organization();
+              })
+          )
+          .append(row_button('View'))
+          .append(row_button('Cancel'))
+      )
+    ;
+  };
+
+  var button = function(text) {
+    return text_item(text)
+      .css('color', white)
+      .css('padding', '2px 4px')
+      .css('min-height', '19px')
+      .css('min-width', '8px')
+      .css('cursor', 'pointer')
+      .css('background-color', dk_gray)
+    ;
+  };
+
+  var row_button = function(text) {
+    return button(text)
+      .css('display', 'inline-block')
+      .css('vertical-align', 'top')
+      .css('margin-left', '2px')
+      .css('margin-top', '1px')
+      .css('margin-bottom', '1px')
     ;
   };
 
 
   var edit_org_panel = function(org) {
     return panel('edit_org_panel')
+      .css('width', 2 * anchor_panel.width() + 'px')
       .append(edit_org_item(org));
   };
 
@@ -211,6 +238,29 @@ dragoman.io = function(){
       });
       return a;
     };
+
+    a.remove_items = function() {
+      a.find('div.panel_item').each(function(index) {
+        if (index > 0) {
+          $(this).remove();
+        }
+      }); 
+      return a;
+    };
+
+    a.add_items = function(orgs) {
+
+      _.forEach(orgs, function(org) {
+        var id = 'org-' + org.id;
+        anchor_panel.append(mod_panel_item(id, org.name)
+          .click(function() {
+            //dragoman.state....()
+          })
+        );
+      });
+
+    };
+
     return a;
   }();
 
@@ -273,6 +323,9 @@ dragoman.io = function(){
     
   };
 
+  var on_edit_org_name_change = function(name) {
+  };
+
   var on_new_org_change = function(new_org) {
 
     var id = new_org.id;
@@ -285,8 +338,7 @@ dragoman.io = function(){
   };
 
   var qword_option_div = function(qword, position, query_type) {
-    return qword_div()
-      .text(qword.text)
+    return button(qword.text)
       .attr('id', qword.id)
       .css('background-color', white)
       .css('color', dk_gray)
@@ -322,13 +374,9 @@ dragoman.io = function(){
       var query_type = qword_selection.query_type;
       var qwords = qword_selection.qwords;
 
-
       _.forEach(qwords, function(qword) {
 
-        alert(JSON.stringify(qword))
-
         d.append(qword_option_div(qword, position, query_type));
-
 
       });
       
@@ -344,11 +392,20 @@ dragoman.io = function(){
     } 
   };
 
+  var on_organizations_change = function(orgs) {
+
+    anchor_panel.remove_items();
+    anchor_panel.add_items(orgs);
+
+  };
+
   var handler = {
     on_new_org_change: on_new_org_change,
     on_foc_org_change: on_foc_org_change,
     on_edit_org_change: on_edit_org_change,
-    on_qword_selection_change: on_qword_selection_change
+    on_edit_org_name_change: on_edit_org_name_change,
+    on_qword_selection_change: on_qword_selection_change,
+    on_organizations_change: on_organizations_change
   };
 
   var start = function() {

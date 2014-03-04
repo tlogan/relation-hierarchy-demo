@@ -121,7 +121,7 @@ dragoman.state = function() {
     };
 
     return _.reduce([
-      ['sender_name', 'Sender Name', function() {
+      ['sender', 'Sender', function() {
         return _.reduce(contacts, function(result, contact, id) {
           result[id] = dragoman.qword(id, contact.name);
           return result;
@@ -234,7 +234,12 @@ dragoman.state = function() {
   );
 
 
-  var organizations = {};
+  var organizations = [];
+
+  var set_organizations = function(_orgs) {
+    organizations = _orgs;
+    notify_handlers('on_organizations_change', organizations);
+  };
 
   var foc_org = null;
   var set_foc_org = function(_foc_org) {
@@ -243,9 +248,16 @@ dragoman.state = function() {
   };
 
   var edit_org = null;
-  var set_edit_org = function(_edit_org) {
+  var set_edit_org = function(_edit_org, part_changed) {
     edit_org = _edit_org;
-    notify_handlers('on_edit_org_change', edit_org);
+
+    if (part_changed == 'name') {
+      notify_handlers('on_edit_org_name_change', edit_org.name);
+    } else {
+      notify_handlers('on_edit_org_change', edit_org);
+    }
+
+
   };
 
   var qword_selection = null;
@@ -256,10 +268,11 @@ dragoman.state = function() {
 
   //interface
   var subscribe = function(io_handler) {
-    io_handler.on_foc_org_change(foc_org),
-    io_handler.on_edit_org_change(edit_org),
-    io_handler.on_new_org_change(new_org)
-    io_handler.on_qword_selection_change(new_org)
+    io_handler.on_foc_org_change(foc_org);
+    io_handler.on_edit_org_change(edit_org);
+    io_handler.on_new_org_change(new_org);
+    io_handler.on_qword_selection_change(new_org);
+    io_handler.on_organizations_change(organizations);
 
     io_handlers.push(io_handler);
   };
@@ -292,7 +305,6 @@ dragoman.state = function() {
       var length = old_qwords.length;
       var new_qwords = function() {
 
-
         if (qword != conj_qwords.done && position != length - 1) {
 
           if (query_type == query_types.filters && position % 3 == 0) {
@@ -312,7 +324,7 @@ dragoman.state = function() {
           var pos = position + 1;
           var word = qword;
 
-          while (word != conj_qwords.done && pos < position + 4) {
+          while (word != conj_qwords.done) {
 
             word = query_type.selection(pos, word)[0];
             end.push(word);
@@ -343,10 +355,45 @@ dragoman.state = function() {
 
       set_edit_org(org);
 
-
     }
 
     set_qword_selection(null); 
+
+  };
+
+  var save_organization = function() {
+    var _organizations = null;
+
+    if (edit_org.id == new_org.id) {
+      var id = organizations.length; 
+      var org = dragoman.organization(
+        id,
+        edit_org.name,
+        edit_org.query
+      );
+      set_edit_org(org);
+      _organizations = _.flatten([organizations, org]);
+    } else {
+
+      var start = organizations.slice(0, edit_org.id);
+      var end = organizations.slice(edit_org.id + 1);
+
+      _organizations = _.flatten([start, edit_org, end]);
+
+    }
+
+    set_organizations(_organizations);
+
+  };
+
+  var change_edit_org_name = function(name) {
+    var org = dragoman.organization(
+      edit_org.id,
+      name,
+      edit_org.query
+    );
+
+    set_edit_org(org, 'name');
 
   };
 
@@ -354,7 +401,9 @@ dragoman.state = function() {
     subscribe: subscribe,
     create_new_organization: create_new_organization,
     change_qword_selection: change_qword_selection,
-    replace_qword: replace_qword
+    replace_qword: replace_qword,
+    change_edit_org_name: change_edit_org_name,
+    save_organization: save_organization
   };
 
 }();
