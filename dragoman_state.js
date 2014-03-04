@@ -127,6 +127,12 @@ dragoman.state = function() {
           return result;
         }, {});
       }],
+      ['protocol', 'Protocol', function() {
+        return _.reduce(protocols, function(result, protocol, id) {
+          result[id] = dragoman.qword(id, protocol.name);
+          return result;
+        }, {});
+      }],
       ['sender_address', 'Sender Address', addresses],
       ['receiver_address', 'Receiver Address', addresses],
       ['read', 'Read', function() {
@@ -401,13 +407,123 @@ dragoman.state = function() {
 
   };
 
+  var cancel_organization = function() {
+
+    set_edit_org(null);
+    set_foc_org(null);
+
+  };
+
+
+  var get_org_contents = function(org, level) {
+
+    //get first level of organization
+    var qwords = org.query.groups.qwords;
+    
+    var level_qwords = null;
+    var start = 0;
+    var end = -1;
+    var i = 0;
+    while (i < level) {
+
+      start = end + 1;
+      var end = _.indexOf(qwords, conj_qwords.nest, start);  
+      if (end < 0) {
+        if (i == level - 1) {
+          end = _.indexOf(qwords, conj_qwords.done);
+        } else {
+          end = 0;
+        }
+      } 
+      
+      i = i + 1;
+
+    }
+
+    var level_qwords = qwords.slice(start, end);
+
+    if (level_qwords.length > 0) {
+      var folders = make_folders(level_qwords);
+      console.log(JSON.stringify(folders));
+
+      return folders;
+
+    } else {
+      return null;
+      //show the messages using the filters
+    }
+
+    set_foc_org(org);
+
+  };
+
+  var make_folders = function(qwords) {
+    var l = qwords.length;
+    if (l == 0) {
+      console.log('error');
+      return null;
+    } 
+
+    var attr = qwords[l - 1];
+    var value_qwords = attr_value_qwords[attr.id].value_qwords();
+    var av_groups = _.map(value_qwords, function(value) {
+      return [dragoman.attr_value_qword(attr, value)];
+    }); 
+    
+    if (l == 1) {
+
+      return av_groups;
+
+    } else {
+
+      var op = qwords[l - 2];
+      var other_qwords = qwords.slice(0, l - 2);
+      var other_av_groups = make_folders(other_qwords);
+
+      if (op == conj_qwords.intersection) {
+
+        return _.flatten(
+          _.map(other_av_groups, function(other_group) {
+            return _.map(av_groups, function(group) {
+              return _.union(other_group, group);
+            });
+          }), 
+          true
+        );
+
+      } else if (op == conj_qwords.union) {
+
+        return _.flatten([av_groups, other_av_groups], true);
+
+      } else {
+        console.log('error: operation is neither x nor + in merge');
+      }
+
+    }
+
+
+
+  };
+
+  var view_edit_organization = function() {
+
+    if (edit_org == null) {
+      console.log('error: edit_org is null in view_edit_organization');
+    }
+
+    var first_level_contents = get_org_contents(edit_org, 1);
+
+  };
+
   return {
     subscribe: subscribe,
     create_new_organization: create_new_organization,
     change_qword_selection: change_qword_selection,
     replace_qword: replace_qword,
     change_edit_org_name: change_edit_org_name,
-    save_organization: save_organization
+    save_organization: save_organization,
+    view_edit_organization: view_edit_organization,
+    cancel_organization: cancel_organization
   };
 
 }();

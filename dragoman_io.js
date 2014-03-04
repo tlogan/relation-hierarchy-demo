@@ -182,8 +182,18 @@ dragoman.io = function(){
                 dragoman.state.save_organization();
               })
           )
-          .append(row_button('View'))
-          .append(row_button('Cancel'))
+          .append(
+            row_button('View')
+              .click(function() {
+                dragoman.state.view_edit_organization();
+              })
+          )
+          .append(
+            row_button('Cancel')
+              .click(function() {
+                dragoman.state.cancel_organization();
+              })
+          )
       )
     ;
   };
@@ -223,12 +233,12 @@ dragoman.io = function(){
 
   var anchor_panel = function() {
     var a = panel('anchor_panel');
-    a.highlight = function(id) {
+    a.highlight = function(org) {
 
       a.find('div.panel_item').each(function(index) {
         var panel_item = $(this);
         var text_item = panel_item.find('div.text_item').first();
-        if (panel_item.attr('id') == id) {
+        if (org != null && panel_item.attr('id') == org.id) {
           text_item.css('background-color', blue);
           text_item.css('color', white);
         } else {
@@ -308,9 +318,7 @@ dragoman.io = function(){
 
   var on_foc_org_change = function(foc_org) {
 
-    if (foc_org != null) {
-      anchor_panel.highlight(foc_org.id);
-    }
+    anchor_panel.highlight(foc_org);
     
   };
 

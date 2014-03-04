@@ -55,6 +55,11 @@ dragoman.qword = function(id, text) { return {
   text: text  
 };};
 
+dragoman.attr_value_qword = function(attr, value) { return {
+  attr: attr,
+  value: value  
+};};
+
 dragoman.attr_qword_value_qwords = function(attr_qword, value_qwords) { return {
   attr_qword: attr_qword,
   value_qwords: value_qwords
