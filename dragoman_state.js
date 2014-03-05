@@ -111,7 +111,7 @@ dragoman.state = function() {
   }, {});
 
 
-  var attr_value_qwords = function() {
+  var attributes = function() {
 
     var addresses = function() {
       return _.reduce(accounts, function(result, account, id) {
@@ -126,27 +126,74 @@ dragoman.state = function() {
           result[id] = dragoman.qword(id, contact.name);
           return result;
         }, {});
+      }, function(sender_contact) {
+
+        var acc_protos = _.map(_.filter(account_protocol_contacts, function(apc) {
+          return apc.contact = sender_contact;
+        }), function(apc) {
+          return apc.account_protocol;
+        });
+
+        return _.filter(messages, function(m) {
+          return _.contains(acc_protos, m.sender);
+        });
+                
       }],
       ['protocol', 'Protocol', function() {
         return _.reduce(protocols, function(result, protocol, id) {
           result[id] = dragoman.qword(id, protocol.name);
           return result;
         }, {});
+      }, function(protocol) {
+
+        var acc_protos = _.filter(account_protocols, function(ap) {
+          return ap.protocol = protocol;
+        });
+
+        return _.filter(messages, function(m) {
+          return _.contains(acc_protos, m.sender);
+        });
+                
       }],
-      ['sender_address', 'Sender Address', addresses],
-      ['receiver_address', 'Receiver Address', addresses],
+      ['sender_address', 'Sender Address', addresses, function(account) {
+
+        var acc_protos = _.filter(account_protocols, function(ap) {
+          return ap.account = account;
+        });
+
+        return _.filter(messages, function(m) {
+          return _.contains(acc_protos, m.sender);
+        });
+                
+      }],
+      ['receiver_address', 'Receiver Address', addresses, function(account) {
+
+        var acc_protos = _.filter(account_protocols, function(ap) {
+          return ap.account = account;
+        });
+
+        return _.filter(messages, function(m) {
+          return _.contains(acc_protos, m.receiver);
+        });
+                
+      }],
       ['read', 'Read', function() {
         return {
           yes: dragoman.qword('yes', 'yes'),
           no: dragoman.qword('no', 'no')
         };
+      }, function(read) {
+        return _.filter(messages, function(m) {
+          return m.read = read;
+        });
       }]
     ], function (result, item) {
 
       var attr_qword = dragoman.qword(item[0], item[1]);
       var value_qwords = item[2]; 
+      var messages = item[3]; 
 
-      result[attr_qword.id] = dragoman.attr_qword_value_qwords(attr_qword, value_qwords);
+      result[attr_qword.id] = dragoman.attribute(attr_qword, value_qwords, messages);
       return result;
 
     }, {});
@@ -171,7 +218,7 @@ dragoman.state = function() {
     return result;
   }, {});
 
-  var closed_attr_qwords = _.map(attr_value_qwords, function(av) {
+  var closed_attr_qwords = _.map(attributes, function(av) {
     return av.attr_qword;
   });
 
@@ -194,7 +241,7 @@ dragoman.state = function() {
       } else if (position % 3 == 0) {
         return closed_attr_qwords;
       } else if (position % 3 == 1) {
-        return _.map(attr_value_qwords[prev_qword.id].value_qwords(), function(qword) {
+        return _.map(attributes[prev_qword.id].value_qwords(), function(qword) {
           return qword;
         });
       } else {
@@ -452,10 +499,10 @@ dragoman.state = function() {
       return null;
     } 
 
-    var attr = qwords[l - 1];
-    var value_qwords = attr_value_qwords[attr.id].value_qwords();
-    var av_groups = _.map(value_qwords, function(value) {
-      return [dragoman.attr_value_qword(attr, value)];
+    var attr_qword = qwords[l - 1];
+    var value_qwords = attributes[attr_qword.id].value_qwords();
+    var av_groups = _.map(value_qwords, function(value_qword) {
+      return [dragoman.qword_pair(attr_qword, value_qword)];
     }); 
     
     if (l == 1) {

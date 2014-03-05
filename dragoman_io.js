@@ -407,13 +407,13 @@ dragoman.io = function(){
       _.forEach(folders, function(folder) {
 
         var name_array = _.map(folder, function(aspect) {
-          return aspect.value.text;
+          return aspect.value_qword.text;
         }); 
 
         var name = name_array.join(' x ');
 
         var id = _.reduce(folder, function(result, aspect) {
-          return result + '_' + aspect.value.id;
+          return result + '_' + aspect.value_qword.id;
         }, ''); 
 
         var item = mod_panel_item(id, name);

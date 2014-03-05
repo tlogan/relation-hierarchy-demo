@@ -55,14 +55,15 @@ dragoman.qword = function(id, text) { return {
   text: text  
 };};
 
-dragoman.attr_value_qword = function(attr, value) { return {
-  attr: attr,
-  value: value  
+dragoman.qword_pair = function(attr_qword, value_qword) { return {
+  attr_qword: attr_qword,
+  value_qword: value_qword  
 };};
 
-dragoman.attr_qword_value_qwords = function(attr_qword, value_qwords) { return {
+dragoman.attribute = function(attr_qword, value_qwords, messages) { return {
   attr_qword: attr_qword,
-  value_qwords: value_qwords
+  value_qwords: value_qwords,
+  messages: messages
 };};
 
 dragoman.org_data = function(org, data, options) { return {
