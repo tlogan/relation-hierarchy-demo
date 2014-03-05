@@ -140,10 +140,10 @@ dragoman.io = function(){
       [ tr().append(td().append(table_text_item('Name')), 
         td().append(text_input(org.name)
           .keypress(function() {
-            dragoman.state.change_edit_org_name($(this).val())
+            dragoman.state.change_current_org_name($(this).val())
           })
           .keyup(function() {
-            dragoman.state.change_edit_org_name($(this).val())
+            dragoman.state.change_current_org_name($(this).val())
           })
           .css('margin', '1px')
           .css('margin-left', '2px')
@@ -185,7 +185,7 @@ dragoman.io = function(){
           .append(
             row_button('View')
               .click(function() {
-                dragoman.state.view_edit_organization();
+                dragoman.state.view_organization();
               })
           )
           .append(
@@ -258,18 +258,7 @@ dragoman.io = function(){
       return a;
     };
 
-    a.add_items = function(orgs) {
 
-      _.forEach(orgs, function(org) {
-        var id = org.id;
-        anchor_panel.append(mod_panel_item(id, org.name)
-          .click(function() {
-            //dragoman.state....()
-          })
-        );
-      });
-
-    };
 
     return a;
   }();
@@ -309,29 +298,23 @@ dragoman.io = function(){
       return i;
     };
 
-
     return i;
 
   }();
 
+  var on_current_org_change = function(org) {
 
-
-  var on_foc_org_change = function(foc_org) {
-
-    anchor_panel.highlight(foc_org);
-    
-  };
-
-  var on_edit_org_change = function(edit_org) {
+    current_org = org;
 
     io.remove_panels();
-    if (edit_org != null) {
-      io.add_panel(edit_org_panel(edit_org));
+    if (org != null) {
+      io.add_panel(edit_org_panel(org));
+      anchor_panel.highlight(org);
     }
     
   };
 
-  var on_edit_org_name_change = function(name) {
+  var on_current_org_name_change = function(name) {
   };
 
   var on_new_org_change = function(new_org) {
@@ -403,17 +386,56 @@ dragoman.io = function(){
   var on_organizations_change = function(orgs) {
 
     anchor_panel.remove_items();
-    anchor_panel.add_items(orgs);
+
+    _.forEach(orgs, function(org) {
+      var id = org.id;
+      anchor_panel.append(mod_panel_item(id, org.name)
+        .click(function() {
+          //dragoman.state....()
+        })
+      );
+    });
 
   };
 
+  var on_org_contents_change = function(org_contents) {
+
+    io.remove_panels();
+    var i = 1;
+    _.forEach(org_contents, function(folders) {
+
+      var p = panel('level_' + i);
+      _.forEach(folders, function(folder) {
+
+        var name_array = _.map(folder, function(aspect) {
+          return aspect.value.text;
+        }); 
+
+        var name = name_array.join(' x ');
+
+        var id = _.reduce(folder, function(result, aspect) {
+          return result + '_' + aspect.value.id;
+        }, ''); 
+
+        var item = mod_panel_item(id, name);
+        p.append(item);
+
+      });
+
+      io.add_panel(p);
+      i = i + 1;
+    });
+
+  };
+
+
   var handler = {
     on_new_org_change: on_new_org_change,
-    on_foc_org_change: on_foc_org_change,
-    on_edit_org_change: on_edit_org_change,
-    on_edit_org_name_change: on_edit_org_name_change,
+    on_current_org_change: on_current_org_change,
+    on_current_org_name_change: on_current_org_name_change,
     on_qword_selection_change: on_qword_selection_change,
-    on_organizations_change: on_organizations_change
+    on_organizations_change: on_organizations_change,
+    on_org_contents_change: on_org_contents_change
   };
 
   var start = function() {
