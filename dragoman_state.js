@@ -363,6 +363,7 @@ dragoman.state = function() {
   var save_organization = function() {
 
     if (current_org.id == new_org.id) {
+
       var id = 'org_' + organizations.length; 
       var org = dragoman.organization(
         id,
@@ -372,6 +373,7 @@ dragoman.state = function() {
       var _organizations = _.flatten([organizations, org]);
       set_organizations(_organizations);
       set_current_org(org);
+
     } else {
 
       var index = current_org.id.substring(4);
@@ -507,6 +509,10 @@ dragoman.state = function() {
 
   };
 
+  var change_current_org = function(org) {
+    set_current_org(org);
+  };
+
   return {
     subscribe: subscribe,
     create_new_organization: create_new_organization,
@@ -515,7 +521,8 @@ dragoman.state = function() {
     change_current_org_name: change_current_org_name,
     save_organization: save_organization,
     view_organization: view_organization,
-    cancel_organization: cancel_organization
+    cancel_organization: cancel_organization,
+    change_current_org: change_current_org
   };
 
 }();

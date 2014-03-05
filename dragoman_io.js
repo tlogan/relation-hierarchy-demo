@@ -304,12 +304,10 @@ dragoman.io = function(){
 
   var on_current_org_change = function(org) {
 
-    current_org = org;
-
+    anchor_panel.highlight(org);
     io.remove_panels();
     if (org != null) {
       io.add_panel(edit_org_panel(org));
-      anchor_panel.highlight(org);
     }
     
   };
@@ -391,7 +389,8 @@ dragoman.io = function(){
       var id = org.id;
       anchor_panel.append(mod_panel_item(id, org.name)
         .click(function() {
-          //dragoman.state....()
+          dragoman.state.change_current_org(org);
+          dragoman.state.view_organization();
         })
       );
     });
