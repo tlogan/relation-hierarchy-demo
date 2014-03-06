@@ -74,21 +74,31 @@ dragoman.dir = function(pairs) { return {
   children: null  
 };};
 
-dragoman.leaf = function(attr_qwords, message) { return {
-  file_type: dragoman.file_types.leaf,
-  attr_qwords: attr_qwords,
-  message: message  
-};};
+dragoman.leaf = function(attr_qwords, message) { 
+  
+  var name = _.map(attr_qwords, function(qword) {
+    return qword.value(message).name
+  }).join(' - ');
+
+  return {
+    file_type: dragoman.file_types.leaf,
+    attr_qwords: attr_qwords,
+    message: message,
+    name: name
+  };
+};
 
 
 /*
+ * value: function(dragoman.message()): dragoman.value_qword() 
  * values: function(): [dragoman.value_qword()] 
  * messages: function(dragoman.value.qword()): [dragoman.message()]
  */
-dragoman.attr_qword = function(id, name, open, value_qwords, messages) { 
+dragoman.attr_qword = function(id, name, open, value, value_qwords, messages) { 
 
   var a = dragoman.qword(id, name); 
   a.open = open;
+  a.value = value;
   a.value_qwords = value_qwords;
   a.messages = messages;
   return a;
@@ -275,7 +285,19 @@ dragoman.database = function() {
     };
 
     return _.reduce([
-      ['sender', 'Sender', false, function() {
+      ['sender', 'Sender', false, function(message) {
+        var sender_apcs = _.filter(account_protocol_contacts, function(apc) {
+          return apc.account_protocol == message.sender;
+        });
+        if (sender_apcs.length > 0) {
+          var contact = sender_apcs[0].contact;
+          return dragoman.value_qword(0, contact.name, contact);
+        } else {
+          var account = message.sender.account;
+          var host = account.host;
+          return dragoman.value_qword(0, account.name + '@' + host.name, null);
+        }
+      }, function() {
         return _.map(contacts, function(contact, id) {
           return dragoman.value_qword(id, contact.name, contact);
         });
@@ -290,7 +312,10 @@ dragoman.database = function() {
           return _.contains(acc_protos, m.sender);
         });
       }],
-      ['protocol', 'Protocol', false, function() {
+      ['protocol', 'Protocol', false, function(message) {
+        var protocol = message.sender.protocol;
+        return dragoman.value_qword(0, protocol.name, protocol);
+      }, function() {
         return _.map(protocols, function(protocol, id) {
           return dragoman.value_qword(id, protocol.name, protocol);
         });
@@ -303,7 +328,12 @@ dragoman.database = function() {
         });
                 
       }],
-      ['sender_address', 'Sender Address', false, account_values, function(account) {
+      ['sender_address', 'Sender Address', false, function(message) {
+        var account = message.sender.account;
+        var host = account.host;
+        var string = account.name + '@' + host.name;
+        return dragoman.value_qword(0, string, account);
+      }, account_values, function(account) {
         var acc_protos = _.filter(account_protocols, function(ap) {
           return ap.account == account;
         });
@@ -311,7 +341,12 @@ dragoman.database = function() {
           return _.contains(acc_protos, m.sender);
         });
       }],
-      ['receiver_address', 'Receiver Address', false, account_values, function(account) {
+      ['receiver_address', 'Receiver Address', false, function(message) {
+        var account = message.receiver.account;
+        var host = account.host;
+        var string = account.name + '@' + host.name;
+        return dragoman.value_qword(0, string, account);
+      }, account_values, function(account) { 
         var acc_protos = _.filter(account_protocols, function(ap) {
           return ap.account == account;
         });
@@ -320,7 +355,9 @@ dragoman.database = function() {
         });
       }],
 
-      ['body', 'Body', true, function() {
+      ['body', 'Body', true, function(message) {
+        return dragoman.value_qword(0, message.body, message.body);
+      }, function() { 
         return _.map(messages, function(message, id) {
           return dragoman.value_qword(id, messages.body, messages.body);
         });
@@ -330,7 +367,9 @@ dragoman.database = function() {
         });
       }],
 
-      ['read', 'Read', false, function() {
+      ['read', 'Read', false, function(message) {
+        return dragoman.value_qword(0, message.read.name, message.read);
+      }, function() { 
         return _.map(yesnos, function(yesno, id) {
           return dragoman.value_qword(id, yesno.name, yesno);
         });
@@ -344,9 +383,10 @@ dragoman.database = function() {
       var attr_id = item[0];
       var attr_name = item[1];
       var open = item[2];
-      var values = item[3];
-      var messages = item[4];
-      var attribute = dragoman.attr_qword(attr_id, attr_name, open, values, messages);
+      var value = item[3];
+      var values = item[4];
+      var messages = item[5];
+      var attribute = dragoman.attr_qword(attr_id, attr_name, open, value, values, messages);
 
       result[attr_id] = attribute;
       return result;
@@ -400,7 +440,7 @@ dragoman.database = function() {
     }],
     ['preview', function(position, prev_qword) {
       var ss = [
-        attr_qwords,
+        _.toArray(attr_qwords),
         [conj_qwords.done, conj_qwords.union]
       ];
 
