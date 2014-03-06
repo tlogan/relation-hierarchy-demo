@@ -48,6 +48,7 @@ dragoman.io = function(){
       .css('padding-top', '12px')
       .css('padding-left', '16px')
       .css('padding-bottom', '12px')
+      .css('padding-right', '12px')
       .css('min-height', '15px')
     ;
   };

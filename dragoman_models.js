@@ -85,9 +85,10 @@ dragoman.leaf = function(attr_qwords, message) { return {
  * values: function(): [dragoman.value_qword()] 
  * messages: function(dragoman.value.qword()): [dragoman.message()]
  */
-dragoman.attr_qword = function(id, name, value_qwords, messages) { 
+dragoman.attr_qword = function(id, name, open, value_qwords, messages) { 
 
   var a = dragoman.qword(id, name); 
+  a.open = open;
   a.value_qwords = value_qwords;
   a.messages = messages;
   return a;
@@ -256,16 +257,16 @@ dragoman.database = function() {
     ['m4', aps.siiri_facebook_xmpp, aps.erika_gmail_xmpp, 4, yesnos.yes, "P.S. you should come to Israel"],
     ['m5', aps.info_orbitz_smtp, aps.erika_gmail_smtp, 5, yesnos.yes, "Your flight information below:"],
     ['m6', aps.erika_gmail_xmpp, aps.thomas_gmail_xmpp, 6, yesnos.yes, "I think you should eat more fruit instead"],
-    ['m7', aps.erika_gmail_xmpp, aps.jason_yahoo_xmpp, 7, yesnos.yes, "You are such a dick, we are no longer friends."], 
-    ['m8', aps.erika_gmail_xmpp, aps.siiri_facebook_xmpp, 8, yesnos.yes, "OK! booking my flight now!"]
-    //['m9', aps.kathy_yahoo_xmpp, aps.erika_gmail_xmpp, 9, yesnos.no, "Hey Erika, thanks for letting me copy your lecture notes :)"],
-    //['m10', aps._456_phone_sms, aps._123_phone_sms, 10, yesnos.no, "Wait, you're actually coming?"]
+    ['m7', aps.erika_gmail_xmpp, aps.jason_yahoo_xmpp, 7, yesnos.yes, "We are no longer friends."], 
+    ['m8', aps.erika_gmail_xmpp, aps.siiri_facebook_xmpp, 8, yesnos.yes, "OK! booking my flight now!"],
+    ['m9', aps.kathy_yahoo_xmpp, aps.erika_gmail_xmpp, 9, yesnos.no, "Hey Erika, thanks for letting me copy your lecture notes :)"],
+    ['m10', aps._456_phone_sms, aps._123_phone_sms, 10, yesnos.no, "Wait, you're actually coming?"]
   ], function (result, item) {
     result[item[0]] = dragoman.message(item[1], item[2], item[3], item[4], item[5]);
     return result;
   }, {});
 
-  var attr_qword = function() {
+  var attr_qwords = function() {
 
     var account_values = function() {
       return _.map(accounts, function(account, id) {
@@ -274,7 +275,7 @@ dragoman.database = function() {
     };
 
     return _.reduce([
-      ['sender', 'Sender', function() {
+      ['sender', 'Sender', false, function() {
         return _.map(contacts, function(contact, id) {
           return dragoman.value_qword(id, contact.name, contact);
         });
@@ -289,7 +290,7 @@ dragoman.database = function() {
           return _.contains(acc_protos, m.sender);
         });
       }],
-      ['protocol', 'Protocol', function() {
+      ['protocol', 'Protocol', false, function() {
         return _.map(protocols, function(protocol, id) {
           return dragoman.value_qword(id, protocol.name, protocol);
         });
@@ -302,7 +303,7 @@ dragoman.database = function() {
         });
                 
       }],
-      ['sender_address', 'Sender Address', account_values, function(account) {
+      ['sender_address', 'Sender Address', false, account_values, function(account) {
         var acc_protos = _.filter(account_protocols, function(ap) {
           return ap.account == account;
         });
@@ -310,7 +311,7 @@ dragoman.database = function() {
           return _.contains(acc_protos, m.sender);
         });
       }],
-      ['receiver_address', 'Receiver Address', account_values, function(account) {
+      ['receiver_address', 'Receiver Address', false, account_values, function(account) {
         var acc_protos = _.filter(account_protocols, function(ap) {
           return ap.account == account;
         });
@@ -318,7 +319,18 @@ dragoman.database = function() {
           return _.contains(acc_protos, m.receiver);
         });
       }],
-      ['read', 'Read', function() {
+
+      ['body', 'Body', true, function() {
+        return _.map(messages, function(message, id) {
+          return dragoman.value_qword(id, messages.body, messages.body);
+        });
+      }, function(read) {
+        return _.filter(messages, function(m) {
+          return m.read == read;
+        });
+      }],
+
+      ['read', 'Read', false, function() {
         return _.map(yesnos, function(yesno, id) {
           return dragoman.value_qword(id, yesno.name, yesno);
         });
@@ -331,9 +343,10 @@ dragoman.database = function() {
 
       var attr_id = item[0];
       var attr_name = item[1];
-      var values = item[2];
-      var messages = item[3];
-      var attribute = dragoman.attr_qword(attr_id, attr_name, values, messages);
+      var open = item[2];
+      var values = item[3];
+      var messages = item[4];
+      var attribute = dragoman.attr_qword(attr_id, attr_name, open, values, messages);
 
       result[attr_id] = attribute;
       return result;
@@ -343,13 +356,6 @@ dragoman.database = function() {
   }();
 
 
-
-  var open_attr_qwords = _.reduce([
-    ['body', 'Body']
-  ], function (result, item) {
-    result[item[0]] = dragoman.qword(item[0], item[1]);
-    return result;
-  }, {});
 
   var conj_qwords = _.reduce([
     ['intersection', 'x'],
@@ -361,8 +367,8 @@ dragoman.database = function() {
     return result;
   }, {});
 
-  var closed_attr_qwords = _.map(attr_qword, function(attr_qword) {
-    return attr_qword;
+  var closed_attr_qwords = _.filter(attr_qwords, function(attr_qword) {
+    return !attr_qword.open;
   });
 
   var query_types = _.reduce([
@@ -394,7 +400,7 @@ dragoman.database = function() {
     }],
     ['preview', function(position, prev_qword) {
       var ss = [
-        _.union(open_attr_qwords, closed_attr_qwords),
+        attr_qwords,
         [conj_qwords.done, conj_qwords.union]
       ];
 
@@ -590,7 +596,7 @@ dragoman.database = function() {
   };
 
   return {
-    open_attr_qwords: open_attr_qwords,
+    attr_qwords: attr_qwords,
     conj_qwords: conj_qwords,
     query_types: query_types,
     get_org_content: get_org_content, 

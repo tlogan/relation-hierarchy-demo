@@ -18,7 +18,7 @@ dragoman.state = function() {
       dragoman.query_phrase(db.query_types.filters,[db.conj_qwords.done]), 
       dragoman.query_phrase(
         db.query_types.preview, 
-        [db.open_attr_qwords.body, db.conj_qwords.done] 
+        [db.attr_qwords.body, db.conj_qwords.done] 
       )
     )
   );
