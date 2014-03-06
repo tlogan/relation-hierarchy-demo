@@ -55,49 +55,28 @@ dragoman.qword = function(id, text) { return {
   text: text  
 };};
 
-dragoman.attr_value_pair = function(attribute, value) { return {
-  attribute: attribute,
-  value: value
+dragoman.attr_value_pair = function(attr_qword, value_qword) { return {
+  attr_qword: attr_qword,
+  value_qword: value_qword
 };};
 
 /*
- * values: function(): [dragoman.value()] 
- * messages: function(dragoman.value()): [dragoman.message()]
+ * values: function(): [dragoman.value_qword()] 
+ * messages: function(dragoman.value.qword()): [dragoman.message()]
  */
-dragoman.attribute = function(id, name, values, messages) { 
+dragoman.attr_qword = function(id, name, value_qwords, messages) { 
 
-  var a = {};
-  a.qword = dragoman.attr_qword(id, name, a); 
-  a.values = values;
+  var a = dragoman.qword(id, name); 
+  a.value_qwords = value_qwords;
   a.messages = messages;
-
   return a;
   
 };
 
-dragoman.attr_qword = function(id, text, attr) { 
-  var q = dragoman.qword(id, text);
-  q.attribute = attr;
-  return q;
-};
-
-dragoman.value = function(id, name, source) { 
-
-  var v = {};
-  v.qword = dragoman.value_qword(id, name, v); 
+dragoman.value_qword = function(id, name, source) { 
+  var v = dragoman.qword(id, name); 
   v.source = source 
-
   return v;
-  
-};
-
-
-dragoman.value_qword = function(id, text, value) { 
-
-  var q = dragoman.qword(id, text);
-  q.value = value;
-  return q;
-  
 };
 
 dragoman.org_data = function(org, data, options) { return {
@@ -261,18 +240,18 @@ dragoman.database = function() {
     return result;
   }, {});
 
-  var attributes = function() {
+  var attr_qword = function() {
 
     var account_values = function() {
       return _.map(accounts, function(account, id) {
-        return dragoman.value(id, account.name + '@' + account.host.name, account);
+        return dragoman.value_qword(id, account.name + '@' + account.host.name, account);
       });
     };
 
     return _.reduce([
       ['sender', 'Sender', function() {
         return _.map(contacts, function(contact, id) {
-          return dragoman.value(id, contact.name, contact);
+          return dragoman.value_qword(id, contact.name, contact);
         });
       }, function(sender_contact) {
         var acc_protos = _.map(_.filter(account_protocol_contacts, function(apc) {
@@ -287,7 +266,7 @@ dragoman.database = function() {
       }],
       ['protocol', 'Protocol', function() {
         return _.map(protocols, function(protocol, id) {
-          return dragoman.value(id, protocol.name, protocol);
+          return dragoman.value_qword(id, protocol.name, protocol);
         });
       }, function(protocol) {
         var acc_protos = _.filter(account_protocols, function(ap) {
@@ -316,7 +295,7 @@ dragoman.database = function() {
       }],
       ['read', 'Read', function() {
         return _.map(yesnos, function(yesno, id) {
-          return dragoman.value(id, yesno.name, yesno);
+          return dragoman.value_qword(id, yesno.name, yesno);
         });
       }, function(read) {
         return _.filter(messages, function(m) {
@@ -329,7 +308,7 @@ dragoman.database = function() {
       var attr_name = item[1];
       var values = item[2];
       var messages = item[3];
-      var attribute = dragoman.attribute(attr_id, attr_name, values, messages);
+      var attribute = dragoman.attr_qword(attr_id, attr_name, values, messages);
 
       result[attr_id] = attribute;
       return result;
@@ -357,8 +336,8 @@ dragoman.database = function() {
     return result;
   }, {});
 
-  var closed_attr_qwords = _.map(attributes, function(attr) {
-    return attr.qword;
+  var closed_attr_qwords = _.map(attr_qword, function(attr_qword) {
+    return attr_qword;
   });
 
   var query_types = _.reduce([
@@ -380,8 +359,8 @@ dragoman.database = function() {
       } else if (position % 3 == 0) {
         return closed_attr_qwords;
       } else if (position % 3 == 1) {
-        return _.map(prev_qword.attribute.values(), function(value) {
-          return value.qword;
+        return _.map(prev_qword.value_qwords(), function(qword) {
+          return qword;
         });
       } else {
         return [conj_qwords.done, conj_qwords.union, conj_qwords.intersection];
@@ -436,8 +415,8 @@ dragoman.database = function() {
       var folders = _.filter(raw_folders, function(folder) {
         
         var messages = _.intersection(_.map(folder, function(pair) {
-          var value_source = pair.value.source;
-          var messages = pair.attribute.messages(value_source); 
+          var value_source = pair.value_qword.source;
+          var messages = pair.attr_qword.messages(value_source); 
           return messages; 
         }));
 
@@ -462,10 +441,9 @@ dragoman.database = function() {
     } 
 
     var attr_qword = qwords[l - 1];
-    var attribute = attr_qword.attribute;
-    var values = attr_qword.attribute.values();
-    var av_groups = _.map(values, function(value) {
-      return [dragoman.attr_value_pair(attribute, value)];
+    var value_qwords = attr_qword.value_qwords();
+    var av_groups = _.map(value_qwords, function(value_qword) {
+      return [dragoman.attr_value_pair(attr_qword, value_qword)];
     }); 
     
     if (l == 1) {
