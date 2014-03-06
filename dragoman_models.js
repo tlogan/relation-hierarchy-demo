@@ -55,10 +55,18 @@ dragoman.qword = function(id, text) { return {
   text: text  
 };};
 
-dragoman.attr_value_pair = function(attr_qword, value_qword) { return {
-  attr_qword: attr_qword,
-  value_qword: value_qword
-};};
+dragoman.attr_value_pair = function(attr_qword, value_qword) { 
+  
+  var messages = function() {
+    return attr_qword.messages(value_qword.source); 
+  }; 
+
+  return {
+    attr_qword: attr_qword,
+    value_qword: value_qword,
+    messages: messages
+  };
+};
 
 /*
  * values: function(): [dragoman.value_qword()] 
@@ -255,7 +263,7 @@ dragoman.database = function() {
         });
       }, function(sender_contact) {
         var acc_protos = _.map(_.filter(account_protocol_contacts, function(apc) {
-          return apc.contact = sender_contact;
+          return apc.contact == sender_contact;
         }), function(apc) {
           return apc.account_protocol;
         });
@@ -270,7 +278,7 @@ dragoman.database = function() {
         });
       }, function(protocol) {
         var acc_protos = _.filter(account_protocols, function(ap) {
-          return ap.protocol = protocol;
+          return ap.protocol == protocol;
         });
         return _.filter(messages, function(m) {
           return _.contains(acc_protos, m.sender);
@@ -279,7 +287,7 @@ dragoman.database = function() {
       }],
       ['sender_address', 'Sender Address', account_values, function(account) {
         var acc_protos = _.filter(account_protocols, function(ap) {
-          return ap.account = account;
+          return ap.account == account;
         });
         return _.filter(messages, function(m) {
           return _.contains(acc_protos, m.sender);
@@ -287,7 +295,7 @@ dragoman.database = function() {
       }],
       ['receiver_address', 'Receiver Address', account_values, function(account) {
         var acc_protos = _.filter(account_protocols, function(ap) {
-          return ap.account = account;
+          return ap.account == account;
         });
         return _.filter(messages, function(m) {
           return _.contains(acc_protos, m.receiver);
@@ -299,7 +307,7 @@ dragoman.database = function() {
         });
       }, function(read) {
         return _.filter(messages, function(m) {
-          return m.read = read;
+          return m.read == read;
         });
       }]
     ], function (result, item) {
@@ -411,19 +419,14 @@ dragoman.database = function() {
 
     if (level_qwords.length > 0) {
       var raw_folders = make_folders(level_qwords);
-
       var folders = _.filter(raw_folders, function(folder) {
-        
-        var messages = _.intersection(_.map(folder, function(pair) {
-          var value_source = pair.value_qword.source;
-          var messages = pair.attr_qword.messages(value_source); 
-          return messages; 
+        var messages = _.intersection.apply(_, _.map(folder, function(pair) {
+          return pair.messages(); 
         }));
 
-        return (messages.length > 0); 
+        return messages.length > 0;
 
       });
-
       return folders;
 
     } else {
