@@ -406,14 +406,14 @@ dragoman.io = function(){
       var p = panel('level_' + i);
       _.forEach(folders, function(folder) {
 
-        var name_array = _.map(folder, function(aspect) {
-          return aspect.value_qword.text;
+        var name_array = _.map(folder, function(pair) {
+          return pair.value.qword.text;
         }); 
 
         var name = name_array.join(' x ');
 
-        var id = _.reduce(folder, function(result, aspect) {
-          return result + '_' + aspect.value_qword.id;
+        var id = _.reduce(folder, function(result, pair) {
+          return result + '_' + pair.value.qword.id;
         }, ''); 
 
         var item = mod_panel_item(id, name);
