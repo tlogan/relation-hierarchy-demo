@@ -438,7 +438,22 @@ dragoman.io = function(){
             children = file.children;
           }
 
-        } else if (file.file_type == dragoman.file_types.message){
+        } else if (file.file_type == dragoman.file_types.leaf){
+
+          var sender = file.message.sender.account.name 
+            + '@' + file.message.sender.account.host.name;
+          var receiver = file.message.receiver.account.name 
+            + '@' + file.message.receiver.account.host.name;
+
+          var name = sender + '->' + receiver + ': ' + file.message.body;
+          var id = 'message_' + file.message.time; 
+          var item = mod_panel_item(id, name)
+            .click(function() {
+              //...
+            })
+          ;
+          p.append(item);
+
         }
 
       });

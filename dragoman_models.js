@@ -37,7 +37,6 @@ dragoman.contact = function(name) { return {
 };};
 
 dragoman.message = function(sender, receiver, time, read, body) { return {
-  file_type: dragoman.file_types.message,
   sender: sender,
   receiver: receiver,
   time: time,
@@ -74,6 +73,13 @@ dragoman.dir = function(pairs) { return {
   pairs: pairs,
   children: null  
 };};
+
+dragoman.leaf = function(attr_qwords, message) { return {
+  file_type: dragoman.file_types.leaf,
+  attr_qwords: attr_qwords,
+  message: message  
+};};
+
 
 /*
  * values: function(): [dragoman.value_qword()] 
@@ -136,7 +142,7 @@ dragoman.query_phrase = function(query_type, qwords) {
 
 dragoman.file_types = {
   dir: 1, 
-  message: 2, 
+  leaf: 2, 
 };
 
 dragoman.database = function() {
@@ -407,11 +413,40 @@ dragoman.database = function() {
    */
   var get_org_content = function(org, parent_dirs) {
 
+    var parent_pairs = _.flatten(_.map(parent_dirs, function(dir) {
+      return dir.pairs;
+    }));
+
     var path_qwords = org.query.groups.qwords;
     var level = parent_dirs.length + 1;
     var _level_qwords = level_qwords(path_qwords, level);
-    return level_content(_level_qwords, parent_dirs);
+    if (_level_qwords.length > 0) {
+      //this level has dirs
+      return level_dirs(_level_qwords, parent_pairs);
+    } else {
+      //this level has leafs 
+      var attr_qwords = _.filter(org.query.preview.qwords, function(qword) {
+        return qword != conj_qwords.union && qword != conj_qwords.done
+      }); 
+      return leafs(parent_pairs, attr_qwords); 
+      
+       
+    }
 
+  };
+
+  var leafs = function(parent_pairs, attr_qwords) {
+    var pairs = parent_pairs; 
+
+    var _messages = parent_pairs.length > 0 
+      ? _.intersection.apply(_, _.map(pairs, function(pair) {
+        return pair.messages(); 
+      }))
+      : messages;
+
+    return _.map(_messages, function(message) {
+      return dragoman.leaf(attr_qwords, message);
+    }); 
   };
 
   var level_qwords = function(path_qwords, level) {
@@ -446,32 +481,29 @@ dragoman.database = function() {
    * returns [dragoman.dir()...]
    * or returns [dragoman.message()...]
    */
-  var level_content = function(_level_qwords, parent_dirs) {
-    if (_level_qwords.length > 0) {
-
-      var parent_pairs = _.flatten(_.map(parent_dirs, function(dir) {
-        return dir.pairs;
-      }));
-
-      var _pair_groups = pair_groups(_level_qwords);
-      var _filtered_pair_groups = _.filter(_pair_groups, function(pairs) {
-        var all_pairs = _.flatten([parent_pairs, pairs]);
-        var messages = _.intersection.apply(_, _.map(all_pairs, function(pair) {
-          return pair.messages(); 
-        }));
-        return messages.length > 0;
-      });
-
-      var _dirs = _.map(_filtered_pair_groups, function(pairs) {
-        return dragoman.dir(pairs);
-      });
-
-      return _dirs;
-
-    } else {
+  var level_dirs = function(_level_qwords, parent_pairs) {
+    
+    if (_level_qwords.length < 0) {
+      console.log('error');
       return null;
-      //show the messages using the filters
     }
+
+    var _pair_groups = pair_groups(_level_qwords);
+    var _filtered_pair_groups = _.filter(_pair_groups, function(pairs) {
+      var all_pairs = _.flatten([parent_pairs, pairs]);
+      var messages = _.intersection.apply(_, _.map(all_pairs, function(pair) {
+        return pair.messages(); 
+      }));
+      return messages.length > 0;
+    });
+
+    var _dirs = _.map(_filtered_pair_groups, function(pairs) {
+      return dragoman.dir(pairs);
+    });
+
+    return _dirs;
+
+     
   };
 
   var pair_groups = function(qwords) {
