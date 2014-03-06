@@ -37,6 +37,7 @@ dragoman.contact = function(name) { return {
 };};
 
 dragoman.message = function(sender, receiver, time, read, body) { return {
+  file_type: dragoman.file_types.message,
   sender: sender,
   receiver: receiver,
   time: time,
@@ -50,9 +51,9 @@ dragoman.organization = function(id, name, query) { return {
   query: query 
 };};
 
-dragoman.qword = function(id, text) { return {
+dragoman.qword = function(id, name) { return {
   id: id,
-  text: text  
+  name: name  
 };};
 
 dragoman.attr_value_pair = function(attr_qword, value_qword) { 
@@ -67,6 +68,12 @@ dragoman.attr_value_pair = function(attr_qword, value_qword) {
     messages: messages
   };
 };
+
+dragoman.dir = function(pairs) { return {
+  file_type: dragoman.file_types.dir,
+  pairs: pairs,
+  children: null  
+};};
 
 /*
  * values: function(): [dragoman.value_qword()] 
@@ -127,6 +134,10 @@ dragoman.query_phrase = function(query_type, qwords) {
 
 };
 
+dragoman.file_types = {
+  dir: 1, 
+  message: 2, 
+};
 
 dragoman.database = function() {
 
@@ -227,7 +238,7 @@ dragoman.database = function() {
     return result;
   }, {});
 
-  var yesnos =  {
+  var yesnos = {
     yes: {name: 'yes'},
     no: {name: 'no'}
   };
@@ -390,53 +401,80 @@ dragoman.database = function() {
   }, {});
 
 
-  var get_org_contents = function(org, level) {
+  /*
+   * returns [dragoman.dir()...]
+   * or returns [dragoman.message()...]
+   */
+  var get_org_content = function(org, parent_dirs) {
 
-    //get first level of organization
-    var qwords = org.query.groups.qwords;
-    
-    var level_qwords = null;
+    var path_qwords = org.query.groups.qwords;
+    var level = parent_dirs.length + 1;
+    var _level_qwords = level_qwords(path_qwords, level);
+    return level_content(_level_qwords, parent_dirs);
+
+  };
+
+  var level_qwords = function(path_qwords, level) {
+
     var start = 0;
     var end = -1;
     var i = 0;
-    while (i < level) {
+
+    while(i < level) {
 
       start = end + 1;
-      var end = _.indexOf(qwords, conj_qwords.nest, start);  
-      if (end < 0) {
+      var nest_index = _.indexOf(path_qwords, conj_qwords.nest, start);  
+      if (nest_index < 0) {
         if (i == level - 1) {
-          end = _.indexOf(qwords, conj_qwords.done);
+          end = _.indexOf(path_qwords, conj_qwords.done);
         } else {
           end = 0;
         }
+      } else {
+        end = nest_index;
       } 
-      
+
       i = i + 1;
 
     }
 
-    var level_qwords = qwords.slice(start, end);
+    return path_qwords.slice(start, end);
 
-    if (level_qwords.length > 0) {
-      var raw_folders = make_folders(level_qwords);
-      var folders = _.filter(raw_folders, function(folder) {
-        var messages = _.intersection.apply(_, _.map(folder, function(pair) {
+  }
+
+  /*
+   * returns [dragoman.dir()...]
+   * or returns [dragoman.message()...]
+   */
+  var level_content = function(_level_qwords, parent_dirs) {
+    if (_level_qwords.length > 0) {
+
+      var parent_pairs = _.flatten(_.map(parent_dirs, function(dir) {
+        return dir.pairs;
+      }));
+
+      var _pair_groups = pair_groups(_level_qwords);
+      var _filtered_pair_groups = _.filter(_pair_groups, function(pairs) {
+        var all_pairs = _.flatten([parent_pairs, pairs]);
+        var messages = _.intersection.apply(_, _.map(all_pairs, function(pair) {
           return pair.messages(); 
         }));
-
         return messages.length > 0;
-
       });
-      return folders;
+
+      var _dirs = _.map(_filtered_pair_groups, function(pairs) {
+        return dragoman.dir(pairs);
+      });
+
+      return _dirs;
 
     } else {
       return null;
       //show the messages using the filters
     }
-
   };
 
-  var make_folders = function(qwords) {
+  var pair_groups = function(qwords) {
     var l = qwords.length;
     if (l == 0) {
       console.log('error');
@@ -457,7 +495,7 @@ dragoman.database = function() {
 
       var op = qwords[l - 2];
       var other_qwords = qwords.slice(0, l - 2);
-      var other_av_groups = make_folders(other_qwords);
+      var other_av_groups = pair_groups(other_qwords);
 
       if (op == conj_qwords.intersection) {
 
@@ -523,7 +561,7 @@ dragoman.database = function() {
     open_attr_qwords: open_attr_qwords,
     conj_qwords: conj_qwords,
     query_types: query_types,
-    get_org_contents: get_org_contents, 
+    get_org_content: get_org_content, 
     new_qwords: new_qwords
   };
 

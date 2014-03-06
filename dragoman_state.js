@@ -164,9 +164,11 @@ dragoman.state = function() {
       console.log('error: current_org is null in view_current_organization');
     }
 
-    var first_level_contents = db.get_org_contents(current_org, 1);
+    var parent_dirs = [];
 
-    set_org_contents([first_level_contents]);
+    var first_level_contents = db.get_org_content(current_org, parent_dirs);
+
+    set_org_contents(first_level_contents);
 
   };
 

@@ -99,7 +99,7 @@ dragoman.io = function(){
 
   var installed_qword_div = function(qword, position, query_type) {
 
-    return row_button(qword.text) 
+    return row_button(qword.name) 
       .attr('id', position + '-' + query_type) 
       .attr('value', qword.id) 
       .css('background-color', green)
@@ -327,7 +327,7 @@ dragoman.io = function(){
   };
 
   var qword_option_div = function(qword, position, query_type) {
-    return button(qword.text)
+    return button(qword.name)
       .attr('id', qword.id)
       .css('background-color', white)
       .css('color', dk_gray)
@@ -397,33 +397,56 @@ dragoman.io = function(){
 
   };
 
-  var on_org_contents_change = function(org_contents) {
+  var on_org_contents_change = function(files) {
 
     io.remove_panels();
-    var i = 1;
-    _.forEach(org_contents, function(folders) {
 
-      var p = panel('level_' + i);
-      _.forEach(folders, function(folder) {
+    var parent_dirs = []; 
+    var fs = files; 
+    while (fs != null) {
 
-        var name_array = _.map(folder, function(pair) {
-          return pair.value_qword.text;
-        }); 
+      var id = _.reduce(parent_dirs, function(result, dir) {
+        var dir_name_array = _.map(dir.pairs, function(pair) {
+          return pair.attr_qword.name + '-eq-' + pair.value_qword.name;
+        });
 
-        var name = name_array.join(' x ');
+        return result + '/' + dir_name_array.join('-x-'); 
+      }, 'path');
 
-        var id = _.reduce(folder, function(result, pair) {
-          return result + '_' + pair.value_qword.id;
-        }, ''); 
+      var p = panel(id);
+      children = null;
+      _.forEach(fs, function(file) {
 
-        var item = mod_panel_item(id, name);
-        p.append(item);
+        if (file.file_type == dragoman.file_types.dir) {
+
+          var name_array = _.map(file.pairs, function(pair) {
+            return pair.attr_qword.name + ':' + pair.value_qword.name;
+          }); 
+          var name = name_array.join(' x ');
+          var id = _.reduce(file.pairs, function(result, pair) {
+            return result + '_' + pair.attr_qword.name + '-eq-' + pair.value_qword.name
+          }, 'dir'); 
+          var item = mod_panel_item(id, name)
+            .click(function() {
+              //...
+            })
+          ;
+          p.append(item);
+
+          if (children == null && file.children != null) {
+            parent_dirs.push(file)
+            children = file.children;
+          }
+
+        } else if (file.file_type == dragoman.file_types.message){
+        }
 
       });
 
+      fs = children;
+
       io.add_panel(p);
-      i = i + 1;
-    });
+    }
 
   };
 
