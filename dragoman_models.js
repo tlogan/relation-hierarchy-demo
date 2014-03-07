@@ -36,7 +36,8 @@ dragoman.contact = function(name) { return {
     name: name
 };};
 
-dragoman.message = function(sender, receiver, time, read, body) { return {
+dragoman.message = function(protocol, sender, receiver, time, read, body) { return {
+  protocol: protocol,
   sender: sender,
   receiver: receiver,
   time: time,
@@ -243,7 +244,7 @@ dragoman.database = function() {
   var account_protocol_contacts = _.reduce([
     ['erika_gmail_smtp_erika', aps.erika_gmail_smtp, contacts.erika],
     ['erika_gmail_xmpp_erika', aps.erika_gmail_xmpp, contacts.erika],
-    ['_123_phone_sms_erika', aps.erika_phone_sms, contacts.erika],
+    ['_123_phone_sms_erika', aps._123_phone_sms, contacts.erika],
     ['siiri_facebook_smtp_siiri', aps.siiri_facebook_smtp, contacts.siiri],
     ['siiri_facebook_xmpp_siiri', aps.siiri_facebook_xmpp, contacts.siiri],
     ['_456_phone_sms_siiri', aps._456_phone_sms, contacts.siiri],
@@ -259,18 +260,18 @@ dragoman.database = function() {
   };
 
   var messages = _.reduce([
-    ['m1', aps.erika_gmail_smtp, aps.siiri_facebook_smtp, 1, yesnos.yes, 'Hey Pookey!'],
-    ['m2', aps.siiri_facebook_smtp, aps.erika_gmail_smtp, 2, yesnos.yes, "What's up girl?!!"],
-    ['m3', aps.thomas_gmail_xmpp, aps.erika_gmail_xmpp, 3, yesnos.yes, "Hey can you buy me some more girl scout cookies?"],
-    ['m4', aps.siiri_facebook_xmpp, aps.erika_gmail_xmpp, 4, yesnos.yes, "P.S. you should come to Israel"],
-    ['m5', aps.info_orbitz_smtp, aps.erika_gmail_smtp, 5, yesnos.yes, "Your flight information below:"],
-    ['m6', aps.erika_gmail_xmpp, aps.thomas_gmail_xmpp, 6, yesnos.yes, "I think you should eat more fruit instead"],
-    ['m7', aps.erika_gmail_xmpp, aps.jason_yahoo_xmpp, 7, yesnos.yes, "We are no longer friends."], 
-    ['m8', aps.erika_gmail_xmpp, aps.siiri_facebook_xmpp, 8, yesnos.yes, "OK! booking my flight now!"],
-    ['m9', aps.kathy_yahoo_xmpp, aps.erika_gmail_xmpp, 9, yesnos.no, "Hey Erika, thanks for letting me copy your lecture notes :)"],
-    ['m10', aps._456_phone_sms, aps._123_phone_sms, 10, yesnos.no, "Wait, you're actually coming?"]
+    ['m1', protocols.smtp, accounts.erika_gmail, accounts.siiri_facebook, 1, yesnos.yes, 'Hey Pookey!'],
+    ['m2', protocols.smtp, accounts.siiri_facebook, accounts.erika_gmail, 2, yesnos.yes, "What's up girl?!!"],
+    ['m3', protocols.xmpp, accounts.thomas_gmail, accounts.erika_gmail, 3, yesnos.yes, "Hey can you buy me some more girl scout cookies?"],
+    ['m4', protocols.xmpp, accounts.siiri_facebook, accounts.erika_gmail, 4, yesnos.yes, "P.S. you should come to Israel"],
+    ['m5', protocols.smtp, accounts.info_orbitz, accounts.erika_gmail, 5, yesnos.yes, "Your flight information below:"],
+    ['m6', protocols.xmpp, accounts.erika_gmail, accounts.thomas_gmail, 6, yesnos.yes, "I think you should eat more fruit instead"],
+    ['m7', protocols.xmpp, accounts.erika_gmail, accounts.jason_yahoo, 7, yesnos.yes, "We are no longer friends."], 
+    ['m8', protocols.xmpp, accounts.erika_gmail, accounts.siiri_facebook, 8, yesnos.yes, "OK! booking my flight now!"],
+    ['m9', protocols.xmpp, accounts.kathy_yahoo, accounts.erika_gmail, 9, yesnos.no, "Hey Erika, thanks for letting me copy your lecture notes :)"],
+    ['m10', protocols.sms, accounts._456_phone, accounts._123_phone, 10, yesnos.no, "Wait, you're actually coming?"]
   ], function (result, item) {
-    result[item[0]] = dragoman.message(item[1], item[2], item[3], item[4], item[5]);
+    result[item[0]] = dragoman.message(item[1], item[2], item[3], item[4], item[5], item[6]);
     return result;
   }, {});
 
@@ -285,13 +286,14 @@ dragoman.database = function() {
     return _.reduce([
       ['sender', 'Sender', false, function(message) {
         var sender_apcs = _.filter(account_protocol_contacts, function(apc) {
-          return apc.account_protocol == message.sender;
+          return apc.account_protocol.account == message.sender
+            && apc.account_protocol.protocol == message.protocol;
         });
         if (sender_apcs.length > 0) {
           var contact = sender_apcs[0].contact;
           return dragoman.value_qword(contact.name, contact);
         } else {
-          var account = message.sender.account;
+          var account = message.sender;
           var host = account.host;
           return dragoman.value_qword(account.name + '@' + host.name, null);
         }
@@ -300,56 +302,47 @@ dragoman.database = function() {
           return dragoman.value_qword(contact.name, contact);
         });
       }, function(sender_contact) {
-        var acc_protos = _.map(_.filter(account_protocol_contacts, function(apc) {
+        var contact_aps = _.map(_.filter(account_protocol_contacts, function(apc) {
           return apc.contact == sender_contact;
         }), function(apc) {
           return apc.account_protocol;
         });
-
-        return _.filter(messages, function(m) {
-          return _.contains(acc_protos, m.sender);
+        return _.filter(messages, function(message) {
+          return _.reduce(contact_aps, function(result, ap) {
+            return result || (message.sender == ap.account && message.protocol == ap.protocol);
+          }, false);
         });
       }],
       ['protocol', 'Protocol', false, function(message) {
-        var protocol = message.sender.protocol;
+        var protocol = message.protocol;
         return dragoman.value_qword(protocol.name, protocol);
       }, function() {
         return _.map(protocols, function(protocol) {
           return dragoman.value_qword(protocol.name, protocol);
         });
       }, function(protocol) {
-        var acc_protos = _.filter(account_protocols, function(ap) {
-          return ap.protocol == protocol;
-        });
         return _.filter(messages, function(m) {
-          return _.contains(acc_protos, m.sender);
+          return m.protocol == protocol;
         });
-                
       }],
       ['sender_address', 'Sender Address', false, function(message) {
-        var account = message.sender.account;
+        var account = message.sender;
         var host = account.host;
         var string = account.name + '@' + host.name;
         return dragoman.value_qword(string, account);
       }, account_values, function(account) {
-        var acc_protos = _.filter(account_protocols, function(ap) {
-          return ap.account == account;
-        });
         return _.filter(messages, function(m) {
-          return _.contains(acc_protos, m.sender);
+          return m.sender == account;
         });
       }],
       ['receiver_address', 'Receiver Address', false, function(message) {
-        var account = message.receiver.account;
+        var account = message.receiver;
         var host = account.host;
         var string = account.name + '@' + host.name;
         return dragoman.value_qword(string, account);
       }, account_values, function(account) { 
-        var acc_protos = _.filter(account_protocols, function(ap) {
-          return ap.account == account;
-        });
         return _.filter(messages, function(m) {
-          return _.contains(acc_protos, m.receiver);
+          return m.receiver == account;
         });
       }],
 
