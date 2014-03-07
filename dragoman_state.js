@@ -155,10 +155,20 @@ dragoman.state = function() {
   };
 
 
-  var org_contents = [];
-  var set_org_contents = function(_org_contents) {
-    org_contents = _org_contents;
-    notify_handlers('on_org_contents_change', org_contents);
+  var root_dir = [];
+  var set_root_dir = function(_root_dir) {
+    root_dir = _root_dir;
+    notify_handlers('on_root_dir_change', root_dir);
+  };
+
+  var update_root_dir = function(anchor_dir, contents) {
+    var siblings = anchor_dir.parent.children;
+    _.forEach(siblings, function(sibling) {
+      sibling.children = null;
+    });
+
+    anchor_dir.children = contents; 
+    notify_handlers('on_root_dir_change', root_dir);
   };
 
   var view_organization = function() {
@@ -167,17 +177,29 @@ dragoman.state = function() {
       console.log('error: current_org is null in view_current_organization');
     }
 
-    var parent_dirs = [];
 
-    var first_level_contents = db.get_org_content(current_org, parent_dirs);
+    var root_dir =  dragoman.dir([], null);
+    root_dir.children = db.get_org_content(current_org, root_dir);
 
-    set_org_contents(first_level_contents);
+    set_root_dir(root_dir);
 
   };
 
   var change_current_org = function(org) {
     set_saved_org(org);
     set_current_org(org);
+  };
+
+  var view_children = function(parent_dir) {
+
+    if (current_org == null) {
+      console.log('error: current_org is null in view_current_organization');
+    }
+
+    var last_level_contents = db.get_org_content(current_org, parent_dir);
+
+    update_root_dir(parent_dir, last_level_contents);
+
   };
 
   return {
@@ -188,6 +210,7 @@ dragoman.state = function() {
     change_current_org_name: change_current_org_name,
     save_organization: save_organization,
     view_organization: view_organization,
+    view_children: view_children,
     cancel_organization: cancel_organization,
     change_current_org: change_current_org
   };
