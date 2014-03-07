@@ -495,6 +495,11 @@ dragoman.database = function() {
 
   var level_qwords = function(path_qwords, level) {
 
+    if (level <= 0) {
+      console.log('error');
+      return null;
+    }
+
     var start = 0;
     var end = -1;
     var i = 0;
@@ -507,10 +512,12 @@ dragoman.database = function() {
         if (i == level - 1) {
           end = _.indexOf(path_qwords, conj_qwords.done);
         } else {
-          end = 0;
+          return []; 
         }
       } else {
         end = nest_index;
+        console.log('else');
+        console.log(end);
       } 
 
       i = i + 1;

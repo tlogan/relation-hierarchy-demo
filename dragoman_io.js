@@ -423,7 +423,6 @@ dragoman.io = function(){
 
     io.remove_panels();
 
-    console.log('start');
     var files = root_dir.children; 
 
     while (files != null) {
