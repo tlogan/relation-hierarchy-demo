@@ -44,14 +44,12 @@ dragoman.message = function(sender, receiver, time, read, body) { return {
   body: body 
 };};
 
-dragoman.organization = function(id, name, query) { return {
-  id: id,
+dragoman.organization = function(name, query) { return {
   name: name,
   query: query 
 };};
 
-dragoman.qword = function(id, name) { return {
-  id: id,
+dragoman.qword = function(name) { return {
   name: name  
 };};
 
@@ -94,9 +92,9 @@ dragoman.leaf = function(attr_qwords, message) {
  * values: function(): [dragoman.value_qword()] 
  * messages: function(dragoman.value.qword()): [dragoman.message()]
  */
-dragoman.attr_qword = function(id, name, open, value, value_qwords, messages) { 
+dragoman.attr_qword = function(name, open, value, value_qwords, messages) { 
 
-  var a = dragoman.qword(id, name); 
+  var a = dragoman.qword(name); 
   a.open = open;
   a.value = value;
   a.value_qwords = value_qwords;
@@ -105,8 +103,8 @@ dragoman.attr_qword = function(id, name, open, value, value_qwords, messages) {
   
 };
 
-dragoman.value_qword = function(id, name, source) { 
-  var v = dragoman.qword(id, name); 
+dragoman.value_qword = function(name, source) { 
+  var v = dragoman.qword(name); 
   v.source = source 
   return v;
 };
@@ -131,8 +129,8 @@ dragoman.query = function(groups_phrase, filters_phrase, preview_phrase) { retur
 };};
 
 //selection is a function
-dragoman.query_type = function(id, selection) { return {
-  id: id,
+dragoman.query_type = function(name, selection) { return {
+  name: name,
   selection: selection
 };};
 
@@ -279,8 +277,8 @@ dragoman.database = function() {
   var attr_qwords = function() {
 
     var account_values = function() {
-      return _.map(accounts, function(account, id) {
-        return dragoman.value_qword(id, account.name + '@' + account.host.name, account);
+      return _.map(accounts, function(account) {
+        return dragoman.value_qword(account.name + '@' + account.host.name, account);
       });
     };
 
@@ -291,15 +289,15 @@ dragoman.database = function() {
         });
         if (sender_apcs.length > 0) {
           var contact = sender_apcs[0].contact;
-          return dragoman.value_qword(0, contact.name, contact);
+          return dragoman.value_qword(contact.name, contact);
         } else {
           var account = message.sender.account;
           var host = account.host;
-          return dragoman.value_qword(0, account.name + '@' + host.name, null);
+          return dragoman.value_qword(account.name + '@' + host.name, null);
         }
       }, function() {
-        return _.map(contacts, function(contact, id) {
-          return dragoman.value_qword(id, contact.name, contact);
+        return _.map(contacts, function(contact) {
+          return dragoman.value_qword(contact.name, contact);
         });
       }, function(sender_contact) {
         var acc_protos = _.map(_.filter(account_protocol_contacts, function(apc) {
@@ -314,10 +312,10 @@ dragoman.database = function() {
       }],
       ['protocol', 'Protocol', false, function(message) {
         var protocol = message.sender.protocol;
-        return dragoman.value_qword(0, protocol.name, protocol);
+        return dragoman.value_qword(protocol.name, protocol);
       }, function() {
-        return _.map(protocols, function(protocol, id) {
-          return dragoman.value_qword(id, protocol.name, protocol);
+        return _.map(protocols, function(protocol) {
+          return dragoman.value_qword(protocol.name, protocol);
         });
       }, function(protocol) {
         var acc_protos = _.filter(account_protocols, function(ap) {
@@ -332,7 +330,7 @@ dragoman.database = function() {
         var account = message.sender.account;
         var host = account.host;
         var string = account.name + '@' + host.name;
-        return dragoman.value_qword(0, string, account);
+        return dragoman.value_qword(string, account);
       }, account_values, function(account) {
         var acc_protos = _.filter(account_protocols, function(ap) {
           return ap.account == account;
@@ -345,7 +343,7 @@ dragoman.database = function() {
         var account = message.receiver.account;
         var host = account.host;
         var string = account.name + '@' + host.name;
-        return dragoman.value_qword(0, string, account);
+        return dragoman.value_qword(string, account);
       }, account_values, function(account) { 
         var acc_protos = _.filter(account_protocols, function(ap) {
           return ap.account == account;
@@ -356,10 +354,10 @@ dragoman.database = function() {
       }],
 
       ['body', 'Body', true, function(message) {
-        return dragoman.value_qword(0, message.body, message.body);
+        return dragoman.value_qword(message.body, message.body);
       }, function() { 
-        return _.map(messages, function(message, id) {
-          return dragoman.value_qword(id, messages.body, messages.body);
+        return _.map(messages, function(message) {
+          return dragoman.value_qword(messages.body, messages.body);
         });
       }, function(read) {
         return _.filter(messages, function(m) {
@@ -368,10 +366,10 @@ dragoman.database = function() {
       }],
 
       ['read', 'Read', false, function(message) {
-        return dragoman.value_qword(0, message.read.name, message.read);
+        return dragoman.value_qword(message.read.name, message.read);
       }, function() { 
-        return _.map(yesnos, function(yesno, id) {
-          return dragoman.value_qword(id, yesno.name, yesno);
+        return _.map(yesnos, function(yesno) {
+          return dragoman.value_qword(yesno.name, yesno);
         });
       }, function(read) {
         return _.filter(messages, function(m) {
@@ -380,15 +378,14 @@ dragoman.database = function() {
       }]
     ], function (result, item) {
 
-      var attr_id = item[0];
       var attr_name = item[1];
       var open = item[2];
       var value = item[3];
       var values = item[4];
       var messages = item[5];
-      var attribute = dragoman.attr_qword(attr_id, attr_name, open, value, values, messages);
+      var attribute = dragoman.attr_qword(attr_name, open, value, values, messages);
 
-      result[attr_id] = attribute;
+      result[item[0]] = attribute;
       return result;
 
     }, {});
@@ -403,7 +400,7 @@ dragoman.database = function() {
     ['nest', '/'],
     ['done', '']
   ], function (result, item) {
-    result[item[0]] = dragoman.qword(item[0], item[1]);
+    result[item[0]] = dragoman.qword(item[1]);
     return result;
   }, {});
 
