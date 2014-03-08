@@ -567,6 +567,27 @@ dragoman.database = function() {
       return null;
     } 
 
+    var index = _.lastIndexOf(qwords, conj_qwords.union); 
+    if (index < 0) {
+      return cross_pair_groups(qwords);
+    } else {
+
+      var first_qwords = qwords.slice(0, index);
+      var last_qwords = qwords.slice(index + 1);
+
+      return _.flatten([pair_groups(first_qwords), cross_pair_groups(last_qwords)], true);
+
+    }
+
+  };
+
+  var cross_pair_groups = function(qwords) {
+    var l = qwords.length;
+    if (l == 0) {
+      console.log('error');
+      return null;
+    } 
+
     var attr_qword = qwords[l - 1];
     var value_qwords = attr_qword.value_qwords();
     var av_groups = _.map(value_qwords, function(value_qword) {
@@ -580,27 +601,23 @@ dragoman.database = function() {
     } else {
 
       var op = qwords[l - 2];
-      var other_qwords = qwords.slice(0, l - 2);
-      var other_av_groups = pair_groups(other_qwords);
-
-      if (op == conj_qwords.intersection) {
-
-        return _.flatten(
-          _.map(other_av_groups, function(other_group) {
-            return _.map(av_groups, function(group) {
-              return _.union(other_group, group);
-            });
-          }), 
-          true
-        );
-
-      } else if (op == conj_qwords.union) {
-
-        return _.flatten([av_groups, other_av_groups], true);
-
-      } else {
-        console.log('error: operation is neither x nor + in merge');
+      if (op != conj_qwords.intersection) {
+        console.log('error');
       }
+      var other_qwords = qwords.slice(0, l - 2);
+      var other_av_groups = cross_pair_groups(other_qwords);
+
+
+      return _.flatten(
+        _.map(other_av_groups, function(other_group) {
+          return _.map(av_groups, function(group) {
+            return _.union(other_group, group);
+          });
+        }), 
+        true
+      );
+
+
 
     }
 
@@ -652,11 +669,4 @@ dragoman.database = function() {
   };
 
 
-
-
-
 };
-
-
-
-
