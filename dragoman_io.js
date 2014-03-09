@@ -4,16 +4,16 @@ dragoman.io = function(){
     return $('<div></div>');
   };
   var mod_height = '50px';
-  var blue = '#77b';
+  var black = '#000';
   var green = '#7b7';
-  var dk_gray = '#999';
-  var gray = '#ddd';
-  var blue_gray = '#eef';
+  var dk_gray = '#888';
+  var gray = '#bbb';
+  var lt_gray = '#eee';
+  var white = '#fff';
   var white = '#fff';
 
   var vertical_pane = function() {
     return div()
-      .css('background-color', gray)
       .css('display', 'inline-block')
       .css('vertical-align', 'top')
   };
@@ -24,17 +24,13 @@ dragoman.io = function(){
     ;
   };
 
-  var panel_divider = function() {
-    return vertical_pane().attr('class', 'panel_divider')
-      .css('width', '2px')
-  };
-
   var clicked_anchor_panel_item = null;
 
   var panel_item = function(id) {
     return div().attr('id', id).attr('class', 'panel_item')
-      .css('background-color', blue_gray)
-      .css('border-bottom', '2px solid ' + gray)
+      .css('background-color', white)
+      .css('margin-right', '8px')
+      .css('border-bottom', '1px solid ' + lt_gray)
     ;
   };
 
@@ -46,7 +42,7 @@ dragoman.io = function(){
 
   var mod_text_item = function(text) {
     return text_item(text) 
-      .css('color', blue)
+      .css('color', dk_gray)
       .css('padding-top', '12px')
       .css('padding-left', '16px')
       .css('padding-bottom', '12px')
@@ -69,7 +65,7 @@ dragoman.io = function(){
   };
 
   var td = function() {
-    return $('<td></td>').css('color', blue)
+    return $('<td></td>').css('color', black)
       .css('vertical-align', 'top')
       .css('padding', '0px')
       ;
@@ -89,12 +85,12 @@ dragoman.io = function(){
       .css('font-size', 'inherit')
       .css('outline', 'none')
       .css('padding', '3px')
-      .css('border', '1px solid ' + dk_gray)
+      .css('border', '1px solid ' + gray)
       .focus(function() {
         $(this).css('border', '1px solid ' + green)
       })
       .blur(function() {
-        $(this).css('border', '1px solid ' + dk_gray)
+        $(this).css('border', '1px solid ' + gray)
       })
     ;
   };
@@ -105,7 +101,8 @@ dragoman.io = function(){
   var installed_qword_div = function(qword, position, query_type) {
 
     return row_button(qword.name) 
-      .css('background-color', green)
+      .css('background-color', dk_gray)
+      .css('color', white)
       .click(function() {
         clicked_installed_qword_div = $(this); 
         dragoman.state.change_qword_selection(position, query_type);
@@ -165,8 +162,7 @@ dragoman.io = function(){
 
     return panel_item('edit_org_item')
       .append(mod_text_item('Message Organization Settings')
-        .css('background-color', blue)
-        .css('color', white)
+        .css('color', black)
       )
       .append(
         table().css('padding-left', '4px')
@@ -204,17 +200,18 @@ dragoman.io = function(){
 
   var button = function(text) {
     return text_item(text)
-      .css('color', white)
+      .css('color', dk_gray)
       .css('padding', '2px 4px')
       .css('min-height', '19px')
       .css('min-width', '8px')
       .css('cursor', 'pointer')
-      .css('background-color', dk_gray)
+      .css('background-color', white)
     ;
   };
 
   var row_button = function(text) {
     return button(text)
+      .css('background-color', lt_gray)
       .css('display', 'inline-block')
       .css('vertical-align', 'top')
       .css('margin-left', '2px')
@@ -235,8 +232,14 @@ dragoman.io = function(){
     .css('margin', 0);
 
   var highlight = function(item) {
-    item.css('background-color', blue);
-    item.css('color', white);
+    item.css('background-color', lt_gray);
+    item.css('color', black);
+    return item;
+  };
+
+  var unhighlight = function(item) {
+    item.css('background-color', white);
+    item.css('color', dk_gray);
     return item;
   };
 
@@ -247,8 +250,7 @@ dragoman.io = function(){
       a.find('div.panel_item').each(function(index) {
         var panel_item = $(this);
         var text_item = panel_item.find('div.text_item').first();
-        text_item.css('background-color', blue_gray);
-        text_item.css('color', blue);
+        unhighlight(text_item);
       });
 
       if (clicked_anchor_panel_item != null) {
@@ -279,20 +281,21 @@ dragoman.io = function(){
 
     var i = $('#io')
       .css('font-family', 'monospace')
+      .css('font-size', '14px')
       .css('color', white)
-      .css('background-color', gray)
       .css('height', '100%')
       .append(div().attr('id', 'control_bar')
-        .css('height', mod_height)
-        .css('background-color', gray)
+        .append(
+          mod_text_item('Dragoman: A Parcel Browser')
+          .css('background-color', white)
+          .css('color', dk_gray)
+        )
+        .css('border-bottom', '1px solid ' + lt_gray)
       )
       .append(anchor_panel)
       ;
 
     i.remove_panels = function() {
-      i.find('div.panel_divider').each(function(index) {
-          $(this).remove();
-      }); 
       i.find('div.panel').each(function(index) {
         if (index > 0) {
           $(this).remove();
@@ -302,7 +305,6 @@ dragoman.io = function(){
     };
 
     i.add_panel = function(panel) {
-      i.append(panel_divider())
       i.append(panel);
       return i;
     };
@@ -332,7 +334,7 @@ dragoman.io = function(){
   var on_new_org_change = function(new_org) {
 
     var id = new_org.id;
-    anchor_panel.append(mod_panel_item(id, '')
+    anchor_panel.append(mod_panel_item(id, 'new')
       .click(function() {
         clicked_anchor_panel_item = $(this);
         dragoman.state.create_new_organization()
@@ -349,7 +351,7 @@ dragoman.io = function(){
         $(this).css('background-color', white);
       })
       .mouseenter(function() {
-        $(this).css('background-color', gray);
+        $(this).css('background-color', lt_gray);
       })
       .click(function() {
         dragoman.state.replace_qword(qword, position, query_type); 
