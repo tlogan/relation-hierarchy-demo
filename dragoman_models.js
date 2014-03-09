@@ -272,10 +272,17 @@ dragoman.database = function() {
       }, false);
     };
 
+    var is_receiver_of = function(message) {
+      return _.reduce(account_protocols(), function(result, ap) {
+        return result || (message.protocol == ap.protocol && message.receiver == ap.account); 
+      }, false);
+    };
+
     return {
       contact: contact,
       account_protocols: account_protocols,
-      is_sender_of: is_sender_of
+      is_sender_of: is_sender_of,
+      is_receiver_of: is_receiver_of
     };
 
   }();
@@ -352,13 +359,21 @@ dragoman.database = function() {
         }), function(apc) {
           return apc.account_protocol;
         });
-        return _.filter(messages, function(message) {
-          return _.reduce(corr_aps, function(result, ap) {
-            return result || 
-              ((message.sender == ap.account || message.receiver == ap.account) 
-              && message.protocol == ap.protocol);
-          }, false);
-        });
+
+        if (corr_contact == user.contact) {
+          return _.filter(messages, function(message) {
+            return user.is_sender_of(message) && user.is_receiver_of(message);
+          });
+        } else {
+          return _.filter(messages, function(message) {
+            return _.reduce(corr_aps, function(result, ap) {
+              return result || 
+                ((message.sender == ap.account || message.receiver == ap.account) 
+                && message.protocol == ap.protocol);
+            }, false);
+          });
+        }
+
       }],
       ['sender', 'Sender', false, function(message) {
         var sender_apcs = _.filter(account_protocol_contacts, function(apc) {
