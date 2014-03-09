@@ -1,6 +1,6 @@
 dragoman.state = function() {
 
-  var db = dragoman.database(); 
+  var db = dragoman.database; 
 
   var io_handlers = [];
 
@@ -10,17 +10,12 @@ dragoman.state = function() {
     });
   };
 
-  var user = db.user;
-
   var new_org = dragoman.organization(
     '',
     dragoman.query(
       dragoman.query_phrase(db.query_types.groups,[db.conj_qwords.done]), 
       dragoman.query_phrase(db.query_types.filters,[db.conj_qwords.done]), 
-      dragoman.query_phrase(
-        db.query_types.preview, 
-        [db.attr_qwords.body, db.conj_qwords.done] 
-      )
+      dragoman.query_phrase(db.query_types.preview, [db.attr_qwords.body])
     )
   );
 
@@ -63,7 +58,6 @@ dragoman.state = function() {
     io_handler.on_new_org_change(new_org);
     io_handler.on_qword_selection_change(new_org);
     io_handler.on_organizations_change(organizations);
-    io_handler.on_user_change(user);
 
     io_handlers.push(io_handler);
   };

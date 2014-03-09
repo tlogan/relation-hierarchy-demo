@@ -87,18 +87,19 @@ dragoman.dir = function(pairs, parent) {
   };
 };
 
-dragoman.leaf = function(attr_qwords, message) { 
-  
-  var name = _.map(attr_qwords, function(qword) {
-    return qword.value(message).name
-  }).join(' - ');
+dragoman.leaf = function(attr_qwords, user, message) { 
 
-  return {
-    file_type: dragoman.file_types.leaf,
-    attr_qwords: attr_qwords,
-    message: message,
-    name: name
-  };
+  var obj = _.reduce(attr_qwords, function(result, qword, key) {
+    result[key] = function() { return qword.value(message); };
+    return result;
+  }, {});
+
+  obj.is_sender_user = function() { return user.is_sender_of(message); };
+
+  obj.file_type = dragoman.file_types.leaf;
+  obj.message = message;
+
+  return obj;
 };
 
 
@@ -479,7 +480,7 @@ dragoman.database = function() {
   var query_types = _.reduce([
     ['groups', function(position, prev_qword) {
       if (position == 0) {
-        return  _.union([conj_qwords.done], closed_attr_qwords);
+        return  _.flatten([conj_qwords.done, closed_attr_qwords]);
       } else {
         var ss = [
           closed_attr_qwords,
@@ -491,7 +492,7 @@ dragoman.database = function() {
     ['filters', function(position, prev_qword) {
 
       if (position == 0) {
-        return  _.union([conj_qwords.done], closed_attr_qwords);
+        return  _.flatten([conj_qwords.done, closed_attr_qwords]);
       } else if (position % 3 == 0) {
         return closed_attr_qwords;
       } else if (position % 3 == 1) {
@@ -503,13 +504,14 @@ dragoman.database = function() {
       }
 
     }],
-    ['preview', function(position, prev_qword) {
-      var ss = [
-        _.toArray(attr_qwords),
-        [conj_qwords.done, conj_qwords.union]
-      ];
 
-      return ss[position % 2];
+    ['preview', function(position, prev_qword) {
+      if (position == 0) {
+        return _.toArray(attr_qwords);
+      } else {
+        return _.flatten([conj_qwords.done, _.toArray(attr_qwords)]);
+      }
+
     }]
 
   ], function (result, item) {
@@ -532,15 +534,12 @@ dragoman.database = function() {
       return level_dirs(_level_qwords, parent_dir);
     } else {
       //this level has leafs 
-      var attr_qwords = _.filter(org.query.preview.qwords, function(qword) {
-        return qword != conj_qwords.union && qword != conj_qwords.done
-      }); 
-      return leafs(parent_dir, attr_qwords); 
+      return leafs(parent_dir); 
     }
 
   };
 
-  var leafs = function(parent_dir, attr_qwords) {
+  var leafs = function(parent_dir) {
     var pairs = parent_dir.all_pairs; 
 
     var _messages = pairs.length > 0 
@@ -550,7 +549,7 @@ dragoman.database = function() {
       : messages;
 
     return _.map(_messages, function(message) {
-      return dragoman.leaf(attr_qwords, message);
+      return dragoman.leaf(attr_qwords, user, message);
     }); 
   };
 
@@ -732,4 +731,4 @@ dragoman.database = function() {
   };
 
 
-};
+}();
