@@ -254,6 +254,30 @@ dragoman.database = function() {
     return result;
   }, {});
 
+  var user = function() {
+
+    var contact = contacts.erika; 
+    var account_protocols = function() {
+      return _.map(_.filter(account_protocol_contacts, function(apc) {
+        return apc.contact == contact;
+      }), function(apc) {
+        return apc.account_protocol;
+      });
+    };
+
+    var is_sender_of = function(message) {
+      return _.reduce(account_protocols(), function(result, ap) {
+        return result || (message.protocol == ap.protocol && message.sender == ap.account); 
+      }, false);
+    };
+
+    return {
+      contact: contact,
+      account_protocols: account_protocols,
+      is_sender_of: is_sender_of
+    };
+
+  }();
 
   var account_protocol_contacts = _.reduce([
     ['erika_gmail_smtp_erika', aps.erika_gmail_smtp, contacts.erika],
@@ -298,6 +322,43 @@ dragoman.database = function() {
     };
 
     return _.reduce([
+      ['correspondent', 'Correspondent', false, function(message) {
+        var corr_apcs = _.filter(account_protocol_contacts, function(apc) {
+          if (user.is_sender_of(message)) {
+            return apc.account_protocol.account == message.receiver
+              && apc.account_protocol.protocol == message.protocol;
+          } else {
+            return apc.account_protocol.account == message.sender
+              && apc.account_protocol.protocol == message.protocol;
+          }
+        });
+        if (contact_apcs.length > 0) {
+          var contact = contact_apcs[0].contact;
+          return dragoman.value_qword(contact.name, contact);
+        } else {
+          var account =  user.is_sender_of(message)
+            ? message.receiver : message.sender;
+          var host = account.host;
+          return dragoman.value_qword(account.name + '@' + host.name, null);
+        }
+      }, function() {
+        return _.map(contacts, function(contact) {
+          return dragoman.value_qword(contact.name, contact);
+        });
+      }, function(corr_contact) {
+        var corr_aps = _.map(_.filter(account_protocol_contacts, function(apc) {
+          return apc.contact == corr_contact;
+        }), function(apc) {
+          return apc.account_protocol;
+        });
+        return _.filter(messages, function(message) {
+          return _.reduce(corr_aps, function(result, ap) {
+            return result || 
+              ((message.sender == ap.account || message.receiver == ap.account) 
+              && message.protocol == ap.protocol);
+          }, false);
+        });
+      }],
       ['sender', 'Sender', false, function(message) {
         var sender_apcs = _.filter(account_protocol_contacts, function(apc) {
           return apc.account_protocol.account == message.sender
@@ -660,12 +721,14 @@ dragoman.database = function() {
 
   };
 
+
   return {
     attr_qwords: attr_qwords,
     conj_qwords: conj_qwords,
     query_types: query_types,
     get_org_content: get_org_content, 
-    new_qwords: new_qwords
+    new_qwords: new_qwords,
+    user: user
   };
 
 

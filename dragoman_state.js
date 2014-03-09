@@ -10,6 +10,8 @@ dragoman.state = function() {
     });
   };
 
+  var user = db.user;
+
   var new_org = dragoman.organization(
     '',
     dragoman.query(
@@ -61,6 +63,8 @@ dragoman.state = function() {
     io_handler.on_new_org_change(new_org);
     io_handler.on_qword_selection_change(new_org);
     io_handler.on_organizations_change(organizations);
+    io_handler.on_user_change(user);
+
     io_handlers.push(io_handler);
   };
 

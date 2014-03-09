@@ -465,6 +465,11 @@ dragoman.io = function(){
               //...
             })
           ;
+
+          if (user != null && user.is_sender_of(file.message)) {
+            item.css('background-color', 'yellow');
+          }
+
           p.append(item);
 
         }
@@ -478,6 +483,11 @@ dragoman.io = function(){
 
   };
 
+  var user = null;
+  var on_user_change = function(_user) {
+    user = _user;
+  };
+
 
   var handler = {
     on_new_org_change: on_new_org_change,
@@ -486,7 +496,8 @@ dragoman.io = function(){
     on_current_org_name_change: on_current_org_name_change,
     on_qword_selection_change: on_qword_selection_change,
     on_organizations_change: on_organizations_change,
-    on_root_dir_change: on_root_dir_change
+    on_root_dir_change: on_root_dir_change,
+    on_user_change: on_user_change
   };
 
   var start = function() {
