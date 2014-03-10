@@ -51,6 +51,13 @@ dragoman.io = function(){
     ;
   };
 
+  var inline_mod_text_item = function(text) {
+    return mod_text_item(text)
+      .css('display', 'inline-block')
+      .css('vertical-align', 'top')
+    ;
+  };
+
   var inline_text_item = function(text) {
     return div().attr('class', 'text_item') 
       .text(text)
@@ -360,7 +367,7 @@ dragoman.io = function(){
       .css('height', '100%')
       .append(div().attr('id', 'control_bar')
         .append(
-          mod_text_item('Dragoman: A Parcel Browser')
+          inline_mod_text_item('Dragoman: A Parcel Browser')
           .css('background-color', white)
           .css('color', dk_gray)
         )
@@ -545,6 +552,15 @@ dragoman.io = function(){
 
   };
 
+  var on_user_change = function(user) {
+    $('#user_heading').remove();
+    $('#control_bar').append(
+      inline_mod_text_item(user.contact.name)
+      .attr('id', 'user_heading')
+      .css('float', 'right')
+    );
+  };
+
 
   var handler = {
     on_new_org_change: on_new_org_change,
@@ -553,7 +569,8 @@ dragoman.io = function(){
     on_current_org_name_change: on_current_org_name_change,
     on_qword_selection_change: on_qword_selection_change,
     on_organizations_change: on_organizations_change,
-    on_root_dir_change: on_root_dir_change
+    on_root_dir_change: on_root_dir_change,
+    on_user_change: on_user_change
   };
 
   var start = function() {
