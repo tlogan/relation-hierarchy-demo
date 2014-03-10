@@ -10,7 +10,6 @@ dragoman.io = function(){
   var gray = '#bbb';
   var lt_gray = '#eee';
   var white = '#fff';
-  var white = '#fff';
 
   var vertical_pane = function() {
     return div()
@@ -37,6 +36,7 @@ dragoman.io = function(){
   var text_item = function(text) {
     return div().attr('class', 'text_item') 
       .text(text)
+      .css('color', black)
     ;
   };
 
@@ -49,6 +49,60 @@ dragoman.io = function(){
       .css('padding-right', '12px')
       .css('min-height', '15px')
     ;
+  };
+
+  var inline_text_item = function(text) {
+    return div().attr('class', 'text_item') 
+      .text(text)
+      .css('color', black)
+      .css('display', 'inline-block')
+      .css('vertical-align', 'top')
+      .css('padding-right', '4px');
+    ;
+  };
+
+  var leaf_panel_item = function(leaf) {
+
+    var id = 'message_' + leaf.message.time; 
+    var p = panel_item(id)
+      .css('padding', '4px');
+
+    var db = dragoman.database;
+
+    _.forEach(leaf.pairs, function(pair) {
+      
+      if (pair.attr_qword == db.attr_qwords.sender) {
+        var item = inline_text_item(pair.value_qword.name)
+          .css('font-weight', 'bold');
+        p.append(item);
+      } else if (pair.attr_qword == db.attr_qwords.sender_address) {
+        var item = inline_text_item('<' + pair.value_qword.name + '>');
+        p.append(item);
+      } else if (pair.attr_qword == db.attr_qwords.receiver_address) {
+        var item = inline_text_item('-> ' + pair.value_qword.name);
+        p.append(item);
+      } else if (pair.attr_qword == db.attr_qwords.protocol) {
+        var item = inline_text_item('[' + pair.value_qword.name + ']')
+        p.append(item);
+      } else {
+        p.append(div());
+        var item = inline_text_item(pair.value_qword.name);
+        p.append(item);
+      }
+  
+    }); 
+
+    p.click(function() {
+        //...
+    });
+
+    if (leaf.is_sender_user()) {
+      p.css('background-color', lt_gray);
+    } else {
+      p.css('background-color', white);
+    }
+
+    return p;
   };
 
   var table = function() {
@@ -478,24 +532,7 @@ dragoman.io = function(){
 
         } else if (file.file_type == dragoman.file_types.leaf) {
 
-          var name = _.reduce(file.pairs, function(result, pair) {
-            return result + pair.attr_qword.name + ':' + pair.value_qword.name + ',';
-          }, ''); 
-
-          var id = 'message_' + file.message.time; 
-          var item = mod_panel_item(id, name)
-            .click(function() {
-              //...
-            })
-          ;
-
-          if (file.is_sender_user()) {
-            item.find('div.text_item').css('color', dk_gray);
-          } else {
-            item.find('div.text_item').css('color', black);
-          }
-
-          p.append(item);
+          p.append(leaf_panel_item(file));
 
         }
 
