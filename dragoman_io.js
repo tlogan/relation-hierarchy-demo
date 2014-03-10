@@ -20,6 +20,7 @@ dragoman.io = function(){
   var panel = function(id) {
     return vertical_pane().attr('id', id).attr('class', 'panel')
       .css('width', '400px')
+
     ;
   };
 
@@ -389,6 +390,9 @@ dragoman.io = function(){
       i.append(panel);
       return i;
     };
+
+    i.css('white-space', 'nowrap');
+    i.css('overflow-x', 'scroll');
 
     return i;
 
