@@ -478,7 +478,9 @@ dragoman.io = function(){
 
         } else if (file.file_type == dragoman.file_types.leaf) {
 
-          var name = file.sender().name + ': ' + file.body().name;
+          var name = _.reduce(file.pairs, function(result, pair) {
+            return result + pair.attr_qword.name + ':' + pair.value_qword.name + ',';
+          }, ''); 
 
           var id = 'message_' + file.message.time; 
           var item = mod_panel_item(id, name)
@@ -488,7 +490,9 @@ dragoman.io = function(){
           ;
 
           if (file.is_sender_user()) {
-            item.css('background-color', 'yellow');
+            item.find('div.text_item').css('color', dk_gray);
+          } else {
+            item.find('div.text_item').css('color', black);
           }
 
           p.append(item);
