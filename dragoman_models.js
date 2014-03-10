@@ -131,9 +131,9 @@ dragoman.org_data = function(org, data, options) { return {
   options: options
 };};
 
-dragoman.qword_selection = function(position, query_type, qwords) { return {
+dragoman.qword_selection = function(position, query_phrase_type, qwords) { return {
     position: position,
-    query_type: query_type, 
+    query_phrase_type: query_phrase_type, 
     qwords: qwords 
 };};
 
@@ -145,20 +145,20 @@ dragoman.query = function(groups_phrase, filters_phrase, preview_phrase) { retur
 };};
 
 //selection is a function
-dragoman.query_type = function(name, selection) { return {
+dragoman.query_phrase_type = function(name, selection) { return {
   name: name,
   selection: selection
 };};
 
-dragoman.query_phrase = function(query_type, qwords) { 
+dragoman.query_phrase = function(query_phrase_type, qwords) { 
 
   var selection = function(position) {
-    var prev_qword = qwords[position - 1];
-    return query_type.selection(position, prev_qword);
+    var prev_qwords = qwords.slice(0, position);
+    return query_phrase_type.selection(position, prev_qwords);
   };
   
   return {
-    query_type: query_type,
+    query_phrase_type: query_phrase_type,
     qwords: qwords,  
     selection: selection
   };
@@ -482,7 +482,7 @@ dragoman.database = function() {
     ['intersection', 'x'],
     ['union', '+'],
     ['nest', '/'],
-    ['done', '']
+    ['done', ';']
   ], function (result, item) {
     result[item[0]] = dragoman.qword(item[1]);
     return result;
@@ -492,8 +492,8 @@ dragoman.database = function() {
     return !attr_qword.open;
   });
 
-  var query_types = _.reduce([
-    ['groups', function(position, prev_qword) {
+  var query_phrase_types = _.reduce([
+    ['groups', function(position, prev_qwords) {
       if (position == 0) {
         return  _.flatten([conj_qwords.done, closed_attr_qwords]);
       } else {
@@ -504,14 +504,15 @@ dragoman.database = function() {
         return ss[position % 2];
       }
     }],
-    ['filters', function(position, prev_qword) {
+    ['filters', function(position, prev_qwords) {
 
       if (position == 0) {
         return  _.flatten([conj_qwords.done, closed_attr_qwords]);
       } else if (position % 3 == 0) {
         return closed_attr_qwords;
       } else if (position % 3 == 1) {
-        return _.map(prev_qword.value_qwords(), function(qword) {
+        var attr_qword = prev_qwords[prev_qwords.length - 1];
+        return _.map(attr_qword.value_qwords(), function(qword) {
           return qword;
         });
       } else {
@@ -520,7 +521,7 @@ dragoman.database = function() {
 
     }],
 
-    ['preview', function(position, prev_qword) {
+    ['preview', function(position, prev_qwords) {
       if (position == 0) {
         return _.toArray(attr_qwords);
       } else {
@@ -530,7 +531,7 @@ dragoman.database = function() {
     }]
 
   ], function (result, item) {
-    result[item[0]] = dragoman.query_type(item[0], item[1]);
+    result[item[0]] = dragoman.query_phrase_type(item[0], item[1]);
     return result;
   }, {});
 
@@ -591,8 +592,6 @@ dragoman.database = function() {
         }
       } else {
         end = nest_index;
-        console.log('else');
-        console.log(end);
       } 
 
       i = i + 1;
@@ -698,16 +697,15 @@ dragoman.database = function() {
 
   };
 
-  var new_qwords = function(query_type, old_qwords, qword, position) {
+  var new_qwords = function(query_phrase_type, old_qwords, qword, position) {
 
     var start = old_qwords.slice(0, position);
     var length = old_qwords.length;
 
     if (qword != conj_qwords.done && position != length - 1) {
 
-      if (query_type == query_types.filters && position % 3 == 0) {
-
-        var next = query_type.selection(position + 1, qword)[0];
+      if (query_phrase_type == query_phrase_types.filters && position % 3 == 0) {
+        var next = query_phrase_type.selection(position + 1, _.flatten([start, qword]))[0];
         var end = old_qwords.slice(position + 2);
         return _.flatten([start, qword, next, end]);
 
@@ -719,18 +717,19 @@ dragoman.database = function() {
 
     } else {
       var end = [];
-      var pos = position + 1;
       var word = qword;
+      var pos = position + 1;
 
       while (word != conj_qwords.done) {
 
-        word = query_type.selection(pos, word)[0];
         end.push(word);
+        var prev_qwords = _.flatten([start, end]);
+        word = query_phrase_type.selection(pos, prev_qwords)[0];
         pos = pos + 1;
 
       }
 
-      return _.flatten([start, qword, end]);
+      return _.flatten([start, end, conj_qwords.done]);
     }
 
   };
@@ -739,7 +738,7 @@ dragoman.database = function() {
   return {
     attr_qwords: attr_qwords,
     conj_qwords: conj_qwords,
-    query_types: query_types,
+    query_phrase_types: query_phrase_types,
     get_org_content: get_org_content, 
     new_qwords: new_qwords,
     user: user

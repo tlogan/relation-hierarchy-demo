@@ -98,25 +98,33 @@ dragoman.io = function(){
 
   var clicked_installed_qword_div = null;
 
-  var installed_qword_div = function(qword, position, query_type) {
+  var installed_qword_div = function(qword, position, query_phrase_type) {
 
     return row_button(qword.name) 
-      .css('background-color', dk_gray)
-      .css('color', white)
+      .css('background-color', white)
+      .css('color', black)
       .click(function() {
         clicked_installed_qword_div = $(this); 
-        dragoman.state.change_qword_selection(position, query_type);
+        dragoman.state.change_qword_selection(position, query_phrase_type);
       });
     
 
   };
 
-  var installed_qword_divs = function(query_type, qwords) {
+  var installed_qword_divs = function(query_phrase_type, qwords) {
 
-    return _.map(qwords, function(qword, index) {
-      var l = qwords.length;
-      return installed_qword_div(qword, index, query_type);
-    });
+    var l = qwords.length;
+    return _.reduce(qwords, function(result, qword, index) {
+      if (query_phrase_type == 'filters' && index % 3 == 1) {
+        result.push(row_block(':'));
+      }
+
+      if (query_phrase_type == 'preview' && index > 0 && index < l - 1) {
+        result.push(row_block(','));
+      }
+      result.push(installed_qword_div(qword, index, query_phrase_type));
+      return result;
+    }, []);
 
   };
 
@@ -136,7 +144,7 @@ dragoman.io = function(){
 
   var edit_org_item = function(org) {
 
-    var rows = _.union(
+    var rows = _.flatten([
 
       [ tr().append(td().append(table_text_item('Name')), 
         td().append(text_input(org.name)
@@ -150,15 +158,15 @@ dragoman.io = function(){
           .css('margin-left', '2px')
           )) ],
 
-      _.map(org.query, function(query_phrase, query_type_id) {
+      _.map(org.query, function(query_phrase, query_phrase_type_id) {
         var qwords = query_phrase.qwords;
         return tr().append( 
-          td().append(table_text_item(capitalized(query_type_id))), 
-          td().append(installed_qword_divs(query_type_id, qwords)) 
+          td().append(table_text_item(capitalized(query_phrase_type_id))), 
+          td().append(installed_qword_divs(query_phrase_type_id, qwords)) 
         );
       })
 
-    );
+    ], true);
 
     return panel_item('edit_org_item')
       .append(mod_text_item('Message Organization Settings')
@@ -212,6 +220,18 @@ dragoman.io = function(){
   var row_button = function(text) {
     return button(text)
       .css('background-color', lt_gray)
+      .css('display', 'inline-block')
+      .css('vertical-align', 'top')
+      .css('margin-left', '2px')
+      .css('margin-top', '1px')
+      .css('margin-bottom', '1px')
+    ;
+  };
+
+  var row_block = function(text) {
+    return div().text(text)
+      .css('background-color', white)
+      .css('color', black)
       .css('display', 'inline-block')
       .css('vertical-align', 'top')
       .css('margin-left', '2px')
@@ -343,7 +363,7 @@ dragoman.io = function(){
     
   };
 
-  var qword_option_div = function(qword, position, query_type) {
+  var qword_option_div = function(qword, position, query_phrase_type) {
     return button(qword.name)
       .css('background-color', white)
       .css('color', dk_gray)
@@ -354,7 +374,7 @@ dragoman.io = function(){
         $(this).css('background-color', lt_gray);
       })
       .click(function() {
-        dragoman.state.replace_qword(qword, position, query_type); 
+        dragoman.state.replace_qword(qword, position, query_phrase_type); 
       })
     ;
 
@@ -371,17 +391,18 @@ dragoman.io = function(){
         .css('display', 'inline-block')
         .css('vertical-align', 'top')
         .css('position', 'absolute')
-        .css('margin-top', '1px')
+        .css('margin-top', '0px')
         .css('z-index', '100')
+        .css('border', '1px solid ' + gray)
         ;
 
       var position = qword_selection.position;
-      var query_type = qword_selection.query_type;
+      var query_phrase_type = qword_selection.query_phrase_type;
       var qwords = qword_selection.qwords;
 
       _.forEach(qwords, function(qword) {
 
-        d.append(qword_option_div(qword, position, query_type));
+        d.append(qword_option_div(qword, position, query_phrase_type));
 
       });
       

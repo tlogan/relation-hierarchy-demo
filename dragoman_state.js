@@ -13,9 +13,9 @@ dragoman.state = function() {
   var new_org = dragoman.organization(
     '',
     dragoman.query(
-      dragoman.query_phrase(db.query_types.groups,[db.conj_qwords.done]), 
-      dragoman.query_phrase(db.query_types.filters,[db.conj_qwords.done]), 
-      dragoman.query_phrase(db.query_types.preview, [db.attr_qwords.body])
+      dragoman.query_phrase(db.query_phrase_types.groups,[db.conj_qwords.done]), 
+      dragoman.query_phrase(db.query_phrase_types.filters,[db.conj_qwords.done]), 
+      dragoman.query_phrase(db.query_phrase_types.preview, [db.attr_qwords.body])
     )
   );
 
@@ -67,32 +67,32 @@ dragoman.state = function() {
     set_saved_org(new_org);
   };
 
-  var change_qword_selection = function(position, query_type) {
+  var change_qword_selection = function(position, query_phrase_type) {
 
     if (current_org == null) {
       alert('error: current_org is null in change_qword_selection');
     }
 
-    var qwords = current_org.query[query_type].selection(position);
-    set_qword_selection(dragoman.qword_selection(position, query_type, qwords)); 
+    var qwords = current_org.query[query_phrase_type].selection(position);
+    set_qword_selection(dragoman.qword_selection(position, query_phrase_type, qwords)); 
 
   };
 
-  var replace_qword = function(qword, position, query_type_id) {
+  var replace_qword = function(qword, position, query_phrase_type_id) {
 
-    var query_phrase = current_org.query[query_type_id];
+    var query_phrase = current_org.query[query_phrase_type_id];
     var old_qwords = query_phrase.qwords;
     if (qword != old_qwords[position]) {
-      var query_type = db.query_types[query_type_id]; 
+      var query_phrase_type = db.query_phrase_types[query_phrase_type_id]; 
 
-      var new_qwords = db.new_qwords(query_type, old_qwords, qword, position);
+      var new_qwords = db.new_qwords(query_phrase_type, old_qwords, qword, position);
 
       var new_query = dragoman.query(
         current_org.query.groups, 
         current_org.query.filters, 
         current_org.query.preview 
       );
-      new_query[query_type_id] = dragoman.query_phrase(query_type, new_qwords);
+      new_query[query_phrase_type_id] = dragoman.query_phrase(query_phrase_type, new_qwords);
 
       var org = dragoman.organization(
         current_org.name,
