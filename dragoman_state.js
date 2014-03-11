@@ -24,6 +24,35 @@ dragoman.state = function() {
 
   var organizations = [];
 
+  var organizations = _.map([
+    ['Convos by Correspondent',
+      [db.attr_qwords.correspondent, db.conj_qwords.done], 
+      [db.conj_qwords.done], 
+      [db.attr_qwords.sender, db.attr_qwords.protocol, db.attr_qwords.body, db.conj_qwords.done]
+    ],
+    ['Convos by Protocol',
+      [db.attr_qwords.protocol, db.conj_qwords.done], 
+      [db.conj_qwords.done], 
+      [db.attr_qwords.sender, db.attr_qwords.receiver_address, 
+      db.attr_qwords.subject, db.attr_qwords.body, db.conj_qwords.done]
+    ],
+    ['Convos by Correspondent and Protocol',
+      [db.attr_qwords.correspondent, db.conj_qwords.intersection, db.attr_qwords.protocol, db.conj_qwords.done], 
+      [db.conj_qwords.done], 
+      [db.attr_qwords.sender, db.attr_qwords.body, db.conj_qwords.done]
+    ],
+  ], function (item) {
+    var org = dragoman.organization(
+      item[0],
+      dragoman.query(
+        dragoman.query_phrase(db.query_phrase_types.groups, item[1]), 
+        dragoman.query_phrase(db.query_phrase_types.filters, item[2]), 
+        dragoman.query_phrase(db.query_phrase_types.preview, item[3])
+      )
+    );
+    return org;
+  });
+
   var set_organizations = function(_orgs) {
     organizations = _orgs;
     notify_handlers('on_organizations_change', organizations);

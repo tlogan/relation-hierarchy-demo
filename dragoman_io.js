@@ -534,10 +534,11 @@ dragoman.io = function(){
 
       var d = dir;
       var path = '';
+      console.log(path);
       while (d != null) {
-        path = _.map(d.pairs, function(pair) {
+        path = '/' + _.map(d.pairs, function(pair) {
           return pair.attr_qword.name + ':' + pair.value_qword.name;
-        }).join(' x ') + ' / ' + path;
+        }).join(' x ') + path;
         d = d.parent;
       };
 
