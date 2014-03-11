@@ -311,6 +311,8 @@ dragoman.io = function(){
 
 
   var body = $('body')
+    .css('font-family', 'monospace')
+    .css('font-size', '14px')
     .css('margin', 0);
 
   var highlight = function(item) {
@@ -362,18 +364,8 @@ dragoman.io = function(){
   var io = function() {
 
     var i = $('#io')
-      .css('font-family', 'monospace')
-      .css('font-size', '14px')
       .css('color', white)
       .css('height', '100%')
-      .append(div().attr('id', 'control_bar')
-        .append(
-          inline_mod_text_item('Dragoman: A Parcel Browser')
-          .css('background-color', white)
-          .css('color', dk_gray)
-        )
-        .css('border-bottom', '1px solid ' + lt_gray)
-      )
       .append(anchor_panel)
       ;
 
@@ -427,6 +419,20 @@ dragoman.io = function(){
     );
     
   };
+
+
+  var control_bar = function() {
+    var d = div().attr('id', 'control_bar')
+      .append(
+        inline_mod_text_item('Dragoman: A Parcel Browser')
+        .css('background-color', white)
+        .css('color', dk_gray)
+      )
+      .css('border-bottom', '1px solid ' + lt_gray);
+    d.insertBefore(io);
+    return d;
+  }();
+  
 
   var qword_option_div = function(qword, position, query_phrase_type) {
     return button(qword.name)
@@ -558,7 +564,7 @@ dragoman.io = function(){
 
   var on_user_change = function(user) {
     $('#user_heading').remove();
-    $('#control_bar').append(
+    control_bar.append(
       inline_mod_text_item(user.contact.name)
       .attr('id', 'user_heading')
       .css('float', 'right')
