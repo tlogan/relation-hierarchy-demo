@@ -153,6 +153,7 @@ dragoman.io = function(){
   var text_input = function(value) {
     return $('<input type="text"/>')
       .attr('value', value)
+      .css('width', '175px')
       .css('font-size', 'inherit')
       .css('outline', 'none')
       .css('padding', '3px')
