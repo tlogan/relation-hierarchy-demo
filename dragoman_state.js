@@ -25,21 +25,28 @@ dragoman.state = function() {
   var organizations = [];
 
   var organizations = _.map([
-    ['Convos by Correspondent',
+    ['Correspondents',
       [db.attr_qwords.correspondent, db.conj_qwords.done], 
       [db.conj_qwords.done], 
       [db.attr_qwords.sender, db.attr_qwords.protocol, db.attr_qwords.body, db.conj_qwords.done]
     ],
-    ['Convos by Protocol',
+    ['Protocols',
       [db.attr_qwords.protocol, db.conj_qwords.done], 
       [db.conj_qwords.done], 
-      [db.attr_qwords.sender, db.attr_qwords.receiver_address, 
+      [db.attr_qwords.sender, db.attr_qwords.receiver, 
       db.attr_qwords.subject, db.attr_qwords.body, db.conj_qwords.done]
     ],
-    ['Convos by Correspondent and Protocol',
+    ['Correspondents with Protocols',
       [db.attr_qwords.correspondent, db.conj_qwords.intersection, db.attr_qwords.protocol, db.conj_qwords.done], 
       [db.conj_qwords.done], 
       [db.attr_qwords.sender, db.attr_qwords.body, db.conj_qwords.done]
+    ],
+    ['Email Correspondents',
+      [db.attr_qwords.correspondent, db.conj_qwords.done], 
+      [db.attr_qwords.protocol, dragoman.value_qword(db.protocols.smtp.name, db.protocols.smtp)
+      , db.conj_qwords.done], 
+      [db.attr_qwords.sender, db.attr_qwords.receiver_address, 
+      db.attr_qwords.subject, db.attr_qwords.body, db.conj_qwords.done]
     ],
   ], function (item) {
     var org = dragoman.organization(
@@ -69,7 +76,7 @@ dragoman.state = function() {
     current_org = _current_org;
 
     if (part_changed == 'name') {
-      notify_handlers('on_current_org_name_change', current_org.name);
+      notify_handlers('on_current_org_name_change', current_org);
     } else {
       notify_handlers('on_current_org_change', current_org);
     }
@@ -184,7 +191,6 @@ dragoman.state = function() {
 
   };
 
-
   var current_dir = [];
   var set_current_dir = function(_current_dir) {
     current_dir = _current_dir;
@@ -229,6 +235,10 @@ dragoman.state = function() {
 
   };
 
+  var remove_current_dir = function() {
+    set_current_dir(null);
+  };
+
   return {
     subscribe: subscribe,
     create_new_organization: create_new_organization,
@@ -239,7 +249,8 @@ dragoman.state = function() {
     view_organization: view_organization,
     view_children: view_children,
     cancel_organization: cancel_organization,
-    change_current_org: change_current_org
+    change_current_org: change_current_org,
+    remove_current_dir: remove_current_dir
   };
 
 }();

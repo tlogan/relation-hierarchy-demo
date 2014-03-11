@@ -404,6 +404,35 @@ dragoman.database = function() {
           }, false);
         });
       }],
+      ['receiver', 'Receiver', false, function(message) {
+        var receiver_apcs = _.filter(account_protocol_contacts, function(apc) {
+          return apc.account_protocol.account == message.receiver
+            && apc.account_protocol.protocol == message.protocol;
+        });
+        if (receiver_apcs.length > 0) {
+          var contact = receiver_apcs[0].contact;
+          return dragoman.value_qword(contact.name, contact);
+        } else {
+          var account = message.receiver;
+          var host = account.host;
+          return dragoman.value_qword(account.name + '@' + host.name, null);
+        }
+      }, function() {
+        return _.map(contacts, function(contact) {
+          return dragoman.value_qword(contact.name, contact);
+        });
+      }, function(receiver_contact) {
+        var contact_aps = _.map(_.filter(account_protocol_contacts, function(apc) {
+          return apc.contact == receiver_contact;
+        }), function(apc) {
+          return apc.account_protocol;
+        });
+        return _.filter(messages, function(message) {
+          return _.reduce(contact_aps, function(result, ap) {
+            return result || (message.receiver == ap.account && message.protocol == ap.protocol);
+          }, false);
+        });
+      }],
       ['protocol', 'Protocol', false, function(message) {
         var protocol = message.protocol;
         return dragoman.value_qword(protocol.name, protocol);
@@ -798,6 +827,7 @@ dragoman.database = function() {
 
 
   return {
+    protocols: protocols,
     attr_qwords: attr_qwords,
     conj_qwords: conj_qwords,
     query_phrase_types: query_phrase_types,

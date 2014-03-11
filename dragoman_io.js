@@ -83,7 +83,6 @@ dragoman.io = function(){
 
     var db = dragoman.database;
 
-
     _.forEach(leaf.pairs, function(pair) {
       
       if (pair.attr_qword == db.attr_qwords.sender) {
@@ -92,6 +91,9 @@ dragoman.io = function(){
         p.append(item);
       } else if (pair.attr_qword == db.attr_qwords.sender_address) {
         var item = inline_text_item(pair.value_qword.name);
+        p.append(item);
+      } else if (pair.attr_qword == db.attr_qwords.receiver) {
+        var item = inline_text_item(' to ' + pair.value_qword.name);
         p.append(item);
       } else if (pair.attr_qword == db.attr_qwords.receiver_address) {
         var item = inline_text_item(' > ' + pair.value_qword.name);
@@ -397,7 +399,10 @@ dragoman.io = function(){
 
   }();
 
+  var current_org = null;
+
   var on_current_org_change = function(org) {
+    current_org = org;
 
     io.remove_panels();
     if (org != null) {
@@ -412,7 +417,8 @@ dragoman.io = function(){
     anchor_panel.highlight(org);
   };
 
-  var on_current_org_name_change = function(name) {
+  var on_current_org_name_change = function(org) {
+    current_org = org;
   };
 
   var on_new_org_change = function(new_org) {
@@ -523,69 +529,82 @@ dragoman.io = function(){
   var on_current_dir_change = function(dir) {
 
     io.remove_panels();
+    if (dir == null) {
+      if (current_org != null) {
+        io.add_panel(edit_org_panel(current_org));
+      }
+    } else {
 
-    var files = dir.children; 
+      var files = dir.children; 
 
+      var id = '';
+      var p = wide_panel(id);
 
-    var id = '';
-    var p = wide_panel(id);
+      var header_item = panel_item('')
+        .css('overflow', 'hidden')
+        ;
+      if (dir.parent != null) {
 
-    if (dir.parent != null) {
-
-      var d = dir;
-      var path = '';
-      console.log(path);
-      while (d != null) {
-        path = '/' + _.map(d.pairs, function(pair) {
-          return pair.attr_qword.name + ':' + pair.value_qword.name;
-        }).join(' x ') + path;
-        d = d.parent;
-      };
-
-
-
-      p.append(panel_item('')
-        .append(inline_mod_text_item('<<')
+        header_item.append(inline_mod_text_item('<<')
           .css('cursor', 'pointer')
           .click(function() {
             //go up one level
             dragoman.state.view_children(dir.parent);
           })
-        )
-        .append(inline_mod_text_item(path)
-        )
-      );
+        );
 
-    }
-
-    children = null;
-    _.forEach(files, function(file) {
-
-      if (file.file_type == dragoman.file_types.dir) {
-
-        var name_array = _.map(file.pairs, function(pair) {
-          return pair.attr_qword.name + ':' + pair.value_qword.name;
-        }); 
-        var name = name_array.join(' x ');
-        var id = _.reduce(file.pairs, function(result, pair) {
-          return result + '_' + pair.attr_qword.name + '-eq-' + pair.value_qword.name
-        }, 'dir'); 
-        var item = mod_panel_item(id, name)
-          .click(function() {
-            dragoman.state.view_children(file);
-          })
-        ;
-        p.append(item);
-
-      } else if (file.file_type == dragoman.file_types.leaf) {
-
-        p.append(leaf_panel_item(file));
-
+        var d = dir;
+        var path = '';
+        while (d != null) {
+          path = '/' + _.map(d.pairs, function(pair) {
+            return pair.attr_qword.name + ':' + pair.value_qword.name;
+          }).join(' x ') + path;
+          d = d.parent;
+        }
+        header_item.append(inline_mod_text_item(path));
       }
 
-    });
+      header_item.append(
+        inline_mod_text_item('edit')
+        .css('float', 'right')
+        .css('cursor', 'pointer')
+        .click(function() {
+          dragoman.state.remove_current_dir();
+        })
+      );
+      
 
-    io.add_panel(p);
+      p.append(header_item);
+
+      children = null;
+      _.forEach(files, function(file) {
+
+        if (file.file_type == dragoman.file_types.dir) {
+
+          var name_array = _.map(file.pairs, function(pair) {
+            return pair.attr_qword.name + ':' + pair.value_qword.name;
+          }); 
+          var name = name_array.join(' x ');
+          var id = _.reduce(file.pairs, function(result, pair) {
+            return result + '_' + pair.attr_qword.name + '-eq-' + pair.value_qword.name
+          }, 'dir'); 
+          var item = mod_panel_item(id, name)
+            .click(function() {
+              dragoman.state.view_children(file);
+            })
+          ;
+          p.append(item);
+
+        } else if (file.file_type == dragoman.file_types.leaf) {
+
+          p.append(leaf_panel_item(file));
+
+        }
+
+      });
+
+      io.add_panel(p);
+    }
 
   };
 
