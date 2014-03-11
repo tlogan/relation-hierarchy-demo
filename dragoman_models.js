@@ -36,12 +36,13 @@ dragoman.contact = function(name) { return {
     name: name
 };};
 
-dragoman.message = function(protocol, sender, receiver, time, read, body) { return {
+dragoman.message = function(protocol, sender, receiver, time, read, subject, body) { return {
   protocol: protocol,
   sender: sender,
   receiver: receiver,
   time: time,
   read: read,
+  subject: subject,
   body: body 
 };};
 
@@ -305,18 +306,18 @@ dragoman.database = function() {
   };
 
   var messages = _.reduce([
-    ['m1', protocols.smtp, accounts.erika_gmail, accounts.siiri_facebook, 1, yesnos.yes, 'Hey Pookey!'],
-    ['m2', protocols.smtp, accounts.siiri_facebook, accounts.erika_gmail, 2, yesnos.yes, "What's up girl?!!"],
-    ['m3', protocols.xmpp, accounts.thomas_gmail, accounts.erika_gmail, 3, yesnos.yes, "Hey can you buy me some more girl scout cookies?"],
-    ['m4', protocols.xmpp, accounts.siiri_facebook, accounts.erika_gmail, 4, yesnos.yes, "P.S. you should come to Israel"],
-    ['m5', protocols.smtp, accounts.info_orbitz, accounts.erika_gmail, 5, yesnos.yes, "Your flight information below:"],
-    ['m6', protocols.xmpp, accounts.erika_gmail, accounts.thomas_gmail, 6, yesnos.yes, "I think you should eat more fruit instead"],
-    ['m7', protocols.xmpp, accounts.erika_gmail, accounts.jason_yahoo, 7, yesnos.yes, "We are no longer friends."], 
-    ['m8', protocols.xmpp, accounts.erika_gmail, accounts.siiri_facebook, 8, yesnos.yes, "OK! booking my flight now!"],
-    ['m9', protocols.xmpp, accounts.kathy_yahoo, accounts.erika_gmail, 9, yesnos.no, "Hey Erika, thanks for letting me copy your lecture notes :)"],
-    ['m10', protocols.sms, accounts._456_phone, accounts._123_phone, 10, yesnos.no, "Wait, you're actually coming?"]
+    ['m1', protocols.smtp, accounts.erika_gmail, accounts.siiri_facebook, 1, yesnos.yes, 'greetings', 'Hey Pookey!'],
+    ['m2', protocols.smtp, accounts.siiri_facebook, accounts.erika_gmail, 2, yesnos.yes, 'RE: greetings', "What's up girl?!!"],
+    ['m3', protocols.xmpp, accounts.thomas_gmail, accounts.erika_gmail, 3, yesnos.yes, '', "Hey can you buy me some more girl scout cookies?"],
+    ['m4', protocols.xmpp, accounts.siiri_facebook, accounts.erika_gmail, 4, yesnos.yes, 'RE: greetings', "P.S. you should come to Israel"],
+    ['m5', protocols.smtp, accounts.info_orbitz, accounts.erika_gmail, 5, yesnos.yes, 'Orbitz Flight', "Your flight information below:"],
+    ['m6', protocols.xmpp, accounts.erika_gmail, accounts.thomas_gmail, 6, yesnos.yes, '', "I think you should eat more fruit instead"],
+    ['m7', protocols.xmpp, accounts.erika_gmail, accounts.jason_yahoo, 7, yesnos.yes, '', "We are no longer friends."], 
+    ['m8', protocols.xmpp, accounts.erika_gmail, accounts.siiri_facebook, 8, yesnos.yes, '', "OK! booking my flight now!"],
+    ['m9', protocols.xmpp, accounts.kathy_yahoo, accounts.erika_gmail, 9, yesnos.no, '', "Hey Erika, thanks for letting me copy your lecture notes :)"],
+    ['m10', protocols.sms, accounts._456_phone, accounts._123_phone, 10, yesnos.no, '', "Wait, you're actually coming?"]
   ], function (result, item) {
-    result[item[0]] = dragoman.message(item[1], item[2], item[3], item[4], item[5], item[6]);
+    result[item[0]] = dragoman.message(item[1], item[2], item[3], item[4], item[5], item[6], item[7]);
     return result;
   }, {});
 
@@ -436,15 +437,27 @@ dragoman.database = function() {
         });
       }],
 
+      ['subject', 'Subject', true, function(message) {
+        return dragoman.value_qword(message.subject, message.subject);
+      }, function() { 
+        return _.map(messages, function(message) {
+          return dragoman.value_qword(message.subject, message.subjet);
+        });
+      }, function(subject) {
+        return _.filter(messages, function(m) {
+          return m.subject === subject;
+        });
+      }],
+
       ['body', 'Body', true, function(message) {
         return dragoman.value_qword(message.body, message.body);
       }, function() { 
         return _.map(messages, function(message) {
-          return dragoman.value_qword(messages.body, messages.body);
+          return dragoman.value_qword(message.body, message.body);
         });
-      }, function(read) {
+      }, function(body) {
         return _.filter(messages, function(m) {
-          return m.read == read;
+          return m.body == body;
         });
       }],
 
