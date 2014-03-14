@@ -19,14 +19,14 @@ dragoman.io = function(){
 
   var panel = function(id) {
     return vertical_pane().attr('id', id).attr('class', 'panel')
-      .css('width', '400px')
+      .css('width', '300px')
 
     ;
   };
 
   var wide_panel = function(id) {
     return panel(id) 
-      .css('width', '800px')
+      .css('width', body.width() - 300)
     ;
   };
 
@@ -49,7 +49,7 @@ dragoman.io = function(){
 
   var mod_text_item = function(text) {
     return text_item(text) 
-      .css('color', dk_gray)
+      .css('color', black)
       .css('padding-top', '12px')
       .css('padding-left', '16px')
       .css('padding-bottom', '12px')
@@ -60,6 +60,7 @@ dragoman.io = function(){
 
   var inline_mod_text_item = function(text) {
     return mod_text_item(text)
+      .css('color', black)
       .css('display', 'inline-block')
       .css('vertical-align', 'top')
     ;
@@ -179,7 +180,6 @@ dragoman.io = function(){
         clicked_installed_qword_div = $(this); 
         dragoman.state.change_qword_selection(position, query_phrase_type);
       });
-    
 
   };
 
@@ -327,13 +327,11 @@ dragoman.io = function(){
 
   var highlight = function(item) {
     item.css('background-color', lt_gray);
-    item.css('color', black);
     return item;
   };
 
   var unhighlight = function(item) {
     item.css('background-color', white);
-    item.css('color', dk_gray);
     return item;
   };
 
@@ -438,10 +436,10 @@ dragoman.io = function(){
   var control_bar = function() {
     var d = div().attr('id', 'control_bar')
       .append(
-        inline_mod_text_item('Dragoman: A Parcel Browser')
-        .css('background-color', white)
-        .css('color', dk_gray)
+        inline_mod_text_item('Dragoman')
+        .css('color', white)
       )
+      .css('background-color', green)
       .css('border-bottom', '1px solid ' + lt_gray);
     d.insertBefore(io);
     return d;
@@ -558,7 +556,7 @@ dragoman.io = function(){
         var path = '';
         while (d != null) {
           path = '/' + _.map(d.pairs, function(pair) {
-            return pair.attr_qword.name + ':' + pair.value_qword.name;
+            return pair.value_qword.name;
           }).join(' x ') + path;
           d = d.parent;
         }
@@ -583,7 +581,7 @@ dragoman.io = function(){
         if (file.file_type == dragoman.file_types.dir) {
 
           var name_array = _.map(file.pairs, function(pair) {
-            return pair.attr_qword.name + ':' + pair.value_qword.name;
+            return pair.value_qword.name;
           }); 
           var name = name_array.join(' x ');
           var id = _.reduce(file.pairs, function(result, pair) {

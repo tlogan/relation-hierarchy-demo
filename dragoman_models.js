@@ -341,9 +341,9 @@ dragoman.database = function() {
   }, {});
 
   var reply_threads = _.reduce([
-      'rt1', 'rt2', 'rt3', 'rt4', 'rt5', 'rt6', 'rt7',
+      'rt1', 'rt2', 'rt3', 'rt4', 'rt5', 'rt6', 'rt7'
   ], function (result, item) {
-    result[item[0]] = dragoman.reply_thread();
+    result[item] = dragoman.reply_thread();
     return result;
   }, {});
 
@@ -539,6 +539,38 @@ dragoman.database = function() {
       }, function(topic) {
         return _.filter(messages, function(m) {
           return m.subject.topic === topic;
+        });
+      }],
+
+
+      ['reply_thread', 'Reply Thread', false, function(message) {
+
+        var first_message = _.filter(_.toArray(messages), function(m) {
+          return m.reply_thread == message.reply_thread;
+        })[0]; 
+
+        var sender_qword = attr_qwords.sender.value(first_message);
+        var string = sender_qword.name + ', ' 
+        + receiver_qword.name + ' ~ ' + first_message.subject.topic.name;
+
+        return dragoman.value_qword(string, message.reply_thread);
+      }, function() { 
+        return _.map(reply_threads, function(reply_thread) {
+
+          var first_message = _.filter(_.toArray(messages), function(m) {
+            return m.reply_thread == reply_thread;
+          })[0]; 
+
+          var sender_qword = attr_qwords.sender.value(first_message);
+          var receiver_qword = attr_qwords.receiver.value(first_message);
+          var string = sender_qword.name + ', ' 
+          + receiver_qword.name + ' ~ ' + first_message.subject.topic.name;
+
+          return dragoman.value_qword(string, reply_thread);
+        });
+      }, function(reply_thread) {
+        return _.filter(messages, function(m) {
+          return m.reply_thread === reply_thread;
         });
       }],
 
