@@ -32,17 +32,28 @@ dragoman.account_protocol_contact = function(account_protocol, contact) { return
     contact: contact
 };};
 
-dragoman.contact = function(name) { return {
+
+dragoman.topic = function(name) { return {
     name: name
 };};
 
-dragoman.message = function(protocol, sender, receiver, time, read, subject, body) { return {
+dragoman.subject = function(name, topic) { return {
+    name: name, 
+    topic: topic
+};};
+
+dragoman.reply_thread = function() { return {
+};};
+
+
+dragoman.message = function(protocol, sender, receiver, time, read, subject, reply_thread, body) { return {
   protocol: protocol,
   sender: sender,
   receiver: receiver,
   time: time,
   read: read,
   subject: subject,
+  reply_thread: reply_thread,
   body: body 
 };};
 
@@ -305,19 +316,60 @@ dragoman.database = function() {
     no: {name: 'no'}
   };
 
-  var messages = _.reduce([
-    ['m1', protocols.smtp, accounts.erika_gmail, accounts.siiri_facebook, 1, yesnos.yes, 'greetings', 'Hey Pookey!'],
-    ['m2', protocols.smtp, accounts.siiri_facebook, accounts.erika_gmail, 2, yesnos.yes, 'RE: greetings', "What's up girl?!!"],
-    ['m3', protocols.xmpp, accounts.thomas_gmail, accounts.erika_gmail, 3, yesnos.yes, '', "Hey can you buy me some more girl scout cookies?"],
-    ['m4', protocols.xmpp, accounts.siiri_facebook, accounts.erika_gmail, 4, yesnos.yes, 'RE: greetings', "P.S. you should come to Israel"],
-    ['m5', protocols.smtp, accounts.info_orbitz, accounts.erika_gmail, 5, yesnos.yes, 'Orbitz Flight', "Your flight information below:"],
-    ['m6', protocols.xmpp, accounts.erika_gmail, accounts.thomas_gmail, 6, yesnos.yes, '', "I think you should eat more fruit instead"],
-    ['m7', protocols.xmpp, accounts.erika_gmail, accounts.jason_yahoo, 7, yesnos.yes, '', "We are no longer friends."], 
-    ['m8', protocols.xmpp, accounts.erika_gmail, accounts.siiri_facebook, 8, yesnos.yes, '', "OK! booking my flight now!"],
-    ['m9', protocols.xmpp, accounts.kathy_yahoo, accounts.erika_gmail, 9, yesnos.no, '', "Hey Erika, thanks for letting me copy your lecture notes :)"],
-    ['m10', protocols.sms, accounts._456_phone, accounts._123_phone, 10, yesnos.no, '', "Wait, you're actually coming?"]
+  dragoman.topic = function(name) { return {
+      name: name
+  };};
+
+  var topics = _.reduce([
+    ['empty', ''],
+    ['greetings', 'greetings'],
+    ['orbitz_flight', 'Orbitz Flight']
   ], function (result, item) {
-    result[item[0]] = dragoman.message(item[1], item[2], item[3], item[4], item[5], item[6], item[7]);
+    result[item[0]] = dragoman.topic(item[1]);
+    return result;
+  }, {});
+
+  var subjects = _.reduce([
+    ['empty', '', topics.empty],
+    ['re_empty', 'RE: ', topics.empty],
+    ['greetings', 'greetings', topics.greetings],
+    ['re_greetings', 'RE: greetings', topics.greetings],
+    ['orbitz_flight', 'Orbitz Flight', topics.orbitz_flight]
+  ], function (result, item) {
+    result[item[0]] = dragoman.subject(item[1], item[2]);
+    return result;
+  }, {});
+
+  var reply_threads = _.reduce([
+      'rt1', 'rt2', 'rt3', 'rt4', 'rt5', 'rt6', 'rt7',
+  ], function (result, item) {
+    result[item[0]] = dragoman.reply_thread();
+    return result;
+  }, {});
+
+  var messages = _.reduce([
+    ['m1', protocols.smtp, accounts.erika_gmail, accounts.siiri_facebook, 
+    1, yesnos.yes, subjects.greetings, reply_threads.rt1, 'Hey Pookey!'],
+    ['m2', protocols.smtp, accounts.siiri_facebook, accounts.erika_gmail, 
+    2, yesnos.yes, subjects.re_greetings, reply_threads.rt1, "What's up girl?!!"],
+    ['m3', protocols.xmpp, accounts.thomas_gmail, accounts.erika_gmail, 
+    3, yesnos.yes, subjects.empty, reply_threads.rt2, "Hey can you buy me some more girl scout cookies?"],
+    ['m4', protocols.xmpp, accounts.siiri_facebook, accounts.erika_gmail, 
+    4, yesnos.yes, subjects.re_greetings, reply_threads.rt3, "P.S. you should come to Israel"],
+    ['m5', protocols.smtp, accounts.info_orbitz, accounts.erika_gmail, 
+    5, yesnos.yes, subjects.orbitz_flight, reply_threads.rt4, "Your flight information below:"],
+    ['m6', protocols.xmpp, accounts.erika_gmail, accounts.thomas_gmail, 
+    6, yesnos.yes, subjects.empty, reply_threads.rt2, "I think you should eat more fruit instead"],
+    ['m7', protocols.xmpp, accounts.erika_gmail, accounts.jason_yahoo, 
+    7, yesnos.yes, subjects.empty, reply_threads.rt5, "We are no longer friends."], 
+    ['m8', protocols.xmpp, accounts.erika_gmail, accounts.siiri_facebook, 
+    8, yesnos.yes, subjects.empty, reply_threads.rt3, "OK! booking my flight now!"],
+    ['m9', protocols.xmpp, accounts.kathy_yahoo, accounts.erika_gmail, 
+    9, yesnos.no, subjects.empty, reply_threads.rt6, "Hey Erika, thanks for letting me copy your lecture notes :)"],
+    ['m10', protocols.sms, accounts._456_phone, accounts._123_phone, 
+    10, yesnos.no, subjects.empty, reply_threads.rt7, "Wait, you're actually coming?"]
+  ], function (result, item) {
+    result[item[0]] = dragoman.message(item[1], item[2], item[3], item[4], item[5], item[6], item[7], item[8]);
     return result;
   }, {});
 
@@ -466,15 +518,27 @@ dragoman.database = function() {
         });
       }],
 
-      ['subject', 'Subject', true, function(message) {
-        return dragoman.value_qword(message.subject, message.subject);
+      ['subject', 'Subject', false, function(message) {
+        return dragoman.value_qword(message.subject.name, message.subject);
       }, function() { 
-        return _.map(messages, function(message) {
-          return dragoman.value_qword(message.subject, message.subjet);
+        return _.map(subjects, function(subject) {
+          return dragoman.value_qword(subject.name, subject);
         });
       }, function(subject) {
         return _.filter(messages, function(m) {
           return m.subject === subject;
+        });
+      }],
+
+      ['topic', 'Topic', false, function(message) {
+        return dragoman.value_qword(message.subject.topic.name, message.subject.topic);
+      }, function() { 
+        return _.map(topics, function(topic) {
+          return dragoman.value_qword(topic.name, topic);
+        });
+      }, function(topic) {
+        return _.filter(messages, function(m) {
+          return m.subject.topic === topic;
         });
       }],
 
