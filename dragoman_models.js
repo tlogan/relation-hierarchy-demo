@@ -240,18 +240,17 @@ dragoman.database = function() {
     return result;
   }, {});
 
-  var aps = account_protocols;
   var xmpp_send_subscriptions = _.reduce([
-      ['erika_siiri', aps.erika_gmail_xmpp, aps.siiri_facebook_xmpp],
-      ['siir_erika', aps.siiri_facebook_xmpp, aps.erika_gmail_xmpp],
-      ['erika_thomas', aps.erika_gmail_xmpp, aps.thomas_gmail_xmpp],
-      ['thomas_erika', aps.thomas_gmail_xmpp, aps.erika_gmail_xmpp],
+      ['erika_siiri', accounts.erika_gmail, accounts.siiri_facebook],
+      ['siiri_erika', accounts.siiri_facebook, accounts.erika_gmail],
+      ['erika_thomas', accounts.erika_gmail, accounts.thomas_gmail],
+      ['thomas_erika', accounts.thomas_gmail, accounts.erika_gmail],
 
       //erika can send messages to jason
-      ['erika_jason', aps.erika_gmail_xmpp, aps.jason_yahoo_xmpp],
+      ['erika_jason', accounts.erika_gmail, accounts.jason_yahoo],
 
       //erika can be sent messages from kathy
-      ['kathy_erika', aps.kathy_yahoo_xmpp, aps.erika_gmail_xmpp]
+      ['kathy_erika', accounts.kathy_yahoo, accounts.erika_gmail]
   ], function (result, item) {
     result[item[0]] = dragoman.subscription(item[1], item[2]);
     return result;
@@ -297,6 +296,8 @@ dragoman.database = function() {
     };
 
   }();
+
+  var aps = account_protocols;
 
   var account_protocol_contacts = _.reduce([
     ['erika_gmail_smtp_erika', aps.erika_gmail_smtp, contacts.erika],
@@ -392,8 +393,8 @@ dragoman.database = function() {
               && apc.account_protocol.protocol == message.protocol;
           }
         });
-        if (contact_apcs.length > 0) {
-          var contact = contact_apcs[0].contact;
+        if (corr_apcs.length > 0) {
+          var contact = corr_apcs[0].contact;
           return dragoman.value_qword(contact.name, contact);
         } else {
           var account =  user.is_sender_of(message)
@@ -427,6 +428,93 @@ dragoman.database = function() {
         }
 
       }],
+
+      ['with_xmpp_subscriber', 'With XMPP Subscriber', false, function(message) {
+
+        var corr_contact = attr_qwords.correspondent.value(message);
+        if (corr_contact.source == null) {
+          if (message.protocol == protocols.xmpp) {
+            var corr_account = user.is_sender_of(message) ? message.receiver : message.sender; 
+            var subscriptions = _.filter(xmpp_send_subscriptions, function(sub) {
+              return sub.subscriber == corr_account;
+            });
+
+            var yesno = subscriptions.length > 0 ? yesnos.yes : yesnos.no;
+            return dragoman.value_qword(yesno.name, yesno);
+          } else {
+            return dragoman.value_qword(yesnos.no.name, yesnos.no);
+          }
+        } else {
+
+          var corr_accounts = _.map(_.filter(account_protocol_contacts, function(apc) {
+            return apc.contact == corr_contact.source 
+              && apc.account_protocol.protocol === protocols.xmpp;
+          }), function(apc) {
+            return apc.account_protocol.account;
+          });
+          
+          var subscriptions = _.filter(xmpp_send_subscriptions, function(sub) {
+            return  _.contains(corr_accounts, sub.subscriber);
+          });
+
+          var yesno = subscriptions.length > 0 ? yesnos.yes : yesnos.no;
+          return dragoman.value_qword(yesno.name, yesno);
+
+        }
+      }, function() {
+        return _.map(yesnos, function(yesno) {
+          return dragoman.value_qword(yesno.name, yesno);
+        });
+      }, function(xmpp_sub_yesno) {
+        return _.filter(messages, function(message) {
+          var yesno = attr_qwords.with_xmpp_subscriber.value(message);
+          return xmpp_sub_yesno == yesno.source;
+        });
+      }],
+
+      ['with_xmpp_subscribee', 'With XMPP Subscribee', false, function(message) {
+
+        var corr_contact = attr_qwords.correspondent.value(message);
+        if (corr_contact.source == null) {
+          if (message.protocol == protocols.xmpp) {
+            var corr_account = user.is_sender_of(message) ? message.receiver : message.sender; 
+            var subscriptions = _.filter(xmpp_send_subscriptions, function(sub) {
+              return sub.subscribee == corr_account;
+            });
+
+            var yesno = subscriptions.length > 0 ? yesnos.yes : yesnos.no;
+            return dragoman.value_qword(yesno.name, yesno);
+          } else {
+            return dragoman.value_qword(yesnos.no.name, yesnos.no);
+          }
+        } else {
+
+          var corr_accounts = _.map(_.filter(account_protocol_contacts, function(apc) {
+            return apc.contact == corr_contact.source 
+              && apc.account_protocol.protocol === protocols.xmpp;
+          }), function(apc) {
+            return apc.account_protocol.account;
+          });
+          
+          var subscriptions = _.filter(xmpp_send_subscriptions, function(sub) {
+            return  _.contains(corr_accounts, sub.subscribee);
+          });
+
+          var yesno = subscriptions.length > 0 ? yesnos.yes : yesnos.no;
+          return dragoman.value_qword(yesno.name, yesno);
+
+        }
+      }, function() {
+        return _.map(yesnos, function(yesno) {
+          return dragoman.value_qword(yesno.name, yesno);
+        });
+      }, function(xmpp_sub_yesno) {
+        return _.filter(messages, function(message) {
+          var yesno = attr_qwords.with_xmpp_subscribee.value(message);
+          return xmpp_sub_yesno == yesno.source;
+        });
+      }],
+
       ['sender', 'Sender', false, function(message) {
         var sender_apcs = _.filter(account_protocol_contacts, function(apc) {
           return apc.account_protocol.account == message.sender
