@@ -43,7 +43,7 @@ dragoman.state = function() {
     ],
     ['Email Correspondents',
       [db.attr_qwords.correspondent, db.conj_qwords.done], 
-      [db.attr_qwords.protocol, dragoman.value_qword(db.protocols.smtp.name, db.protocols.smtp)
+      [db.attr_qwords.protocol, dragoman.value_qword(db.protocols.email.name, db.protocols.email)
       , db.conj_qwords.done], 
       [db.attr_qwords.sender, db.attr_qwords.receiver_address, 
       db.attr_qwords.subject, db.attr_qwords.body, db.conj_qwords.done]
@@ -56,7 +56,7 @@ dragoman.state = function() {
     ],
 
     ['With Subscriber or Not',
-      [db.attr_qwords.with_xmpp_subscriber, db.conj_qwords.done], 
+      [db.attr_qwords.with_chat_subscriber, db.conj_qwords.done], 
       [db.conj_qwords.done], 
       [db.attr_qwords.sender, db.attr_qwords.receiver, db.attr_qwords.protocol, 
       db.attr_qwords.subject, db.attr_qwords.body, db.conj_qwords.done]

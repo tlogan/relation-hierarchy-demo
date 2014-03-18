@@ -211,10 +211,10 @@ dragoman.database = function() {
 
 
   var protocols = _.reduce([
-    'smtp',
-    'xmpp',
+    'email',
+    'chat',
     'sip',
-    'sms',
+    'text',
     'voice' 
   ], function (result, item) {
     result[item] = dragoman.protocol(item);
@@ -223,24 +223,24 @@ dragoman.database = function() {
 
   
   var account_protocols = _.reduce([
-      ['erika_gmail_smtp', accounts.erika_gmail, protocols.smtp],
-      ['erika_gmail_xmpp', accounts.erika_gmail, protocols.xmpp],
-      ['_123_phone_sms', accounts._123_phone, protocols.sms],
-      ['thomas_gmail_xmpp', accounts.thomas_gmail, protocols.xmpp],
-      ['siiri_facebook_xmpp', accounts.siiri_facebook, protocols.xmpp],
-      ['siiri_facebook_smtp', accounts.siiri_facebook, protocols.smtp],
+      ['erika_gmail_email', accounts.erika_gmail, protocols.email],
+      ['erika_gmail_chat', accounts.erika_gmail, protocols.chat],
+      ['_123_phone_text', accounts._123_phone, protocols.text],
+      ['thomas_gmail_chat', accounts.thomas_gmail, protocols.chat],
+      ['siiri_facebook_chat', accounts.siiri_facebook, protocols.chat],
+      ['siiri_facebook_email', accounts.siiri_facebook, protocols.email],
       ['siiri_facebook_sip', accounts.siiri_facebook, protocols.sip],
-      ['_456_phone_sms', accounts._456_phone, protocols.sms],
+      ['_456_phone_text', accounts._456_phone, protocols.text],
 
-      ['jason_yahoo_xmpp', accounts.jason_yahoo, protocols.xmpp],
-      ['kathy_yahoo_xmpp', accounts.kathy_yahoo, protocols.xmpp],
-      ['info_orbitz_smtp', accounts.info_orbitz, protocols.smtp]
+      ['jason_yahoo_chat', accounts.jason_yahoo, protocols.chat],
+      ['kathy_yahoo_chat', accounts.kathy_yahoo, protocols.chat],
+      ['info_orbitz_email', accounts.info_orbitz, protocols.email]
   ], function (result, item) {
     result[item[0]] = dragoman.account_protocol(item[1], item[2]);
     return result;
   }, {});
 
-  var xmpp_send_subscriptions = _.reduce([
+  var chat_send_subscriptions = _.reduce([
       ['erika_siiri', accounts.erika_gmail, accounts.siiri_facebook],
       ['siiri_erika', accounts.siiri_facebook, accounts.erika_gmail],
       ['erika_thomas', accounts.erika_gmail, accounts.thomas_gmail],
@@ -300,13 +300,13 @@ dragoman.database = function() {
   var aps = account_protocols;
 
   var account_protocol_contacts = _.reduce([
-    ['erika_gmail_smtp_erika', aps.erika_gmail_smtp, contacts.erika],
-    ['erika_gmail_xmpp_erika', aps.erika_gmail_xmpp, contacts.erika],
-    ['_123_phone_sms_erika', aps._123_phone_sms, contacts.erika],
-    ['siiri_facebook_smtp_siiri', aps.siiri_facebook_smtp, contacts.siiri],
-    ['siiri_facebook_xmpp_siiri', aps.siiri_facebook_xmpp, contacts.siiri],
-    ['_456_phone_sms_siiri', aps._456_phone_sms, contacts.siiri],
-    ['thomas_gmail_xmpp_thomas', aps.thomas_gmail_xmpp, contacts.thomas]
+    ['erika_gmail_email_erika', aps.erika_gmail_email, contacts.erika],
+    ['erika_gmail_chat_erika', aps.erika_gmail_chat, contacts.erika],
+    ['_123_phone_text_erika', aps._123_phone_text, contacts.erika],
+    ['siiri_facebook_email_siiri', aps.siiri_facebook_email, contacts.siiri],
+    ['siiri_facebook_chat_siiri', aps.siiri_facebook_chat, contacts.siiri],
+    ['_456_phone_text_siiri', aps._456_phone_text, contacts.siiri],
+    ['thomas_gmail_chat_thomas', aps.thomas_gmail_chat, contacts.thomas]
   ], function (result, item) {
     result[item[0]] = dragoman.account_protocol_contact(item[1], item[2]);
     return result;
@@ -349,25 +349,25 @@ dragoman.database = function() {
   }, {});
 
   var messages = _.reduce([
-    ['m1', protocols.smtp, accounts.erika_gmail, accounts.siiri_facebook, 
+    ['m1', protocols.email, accounts.erika_gmail, accounts.siiri_facebook, 
     1, yesnos.yes, subjects.greetings, reply_threads.rt1, 'Hey Pookey!'],
-    ['m2', protocols.smtp, accounts.siiri_facebook, accounts.erika_gmail, 
+    ['m2', protocols.email, accounts.siiri_facebook, accounts.erika_gmail, 
     2, yesnos.yes, subjects.re_greetings, reply_threads.rt1, "What's up girl?!!"],
-    ['m3', protocols.xmpp, accounts.thomas_gmail, accounts.erika_gmail, 
+    ['m3', protocols.chat, accounts.thomas_gmail, accounts.erika_gmail, 
     3, yesnos.yes, subjects.empty, reply_threads.rt2, "Hey can you buy me some more girl scout cookies?"],
-    ['m4', protocols.xmpp, accounts.siiri_facebook, accounts.erika_gmail, 
+    ['m4', protocols.chat, accounts.siiri_facebook, accounts.erika_gmail, 
     4, yesnos.yes, subjects.re_greetings, reply_threads.rt3, "P.S. you should come to Israel"],
-    ['m5', protocols.smtp, accounts.info_orbitz, accounts.erika_gmail, 
+    ['m5', protocols.email, accounts.info_orbitz, accounts.erika_gmail, 
     5, yesnos.yes, subjects.orbitz_flight, reply_threads.rt4, "Your flight information below:"],
-    ['m6', protocols.xmpp, accounts.erika_gmail, accounts.thomas_gmail, 
+    ['m6', protocols.chat, accounts.erika_gmail, accounts.thomas_gmail, 
     6, yesnos.yes, subjects.empty, reply_threads.rt2, "I think you should eat more fruit instead"],
-    ['m7', protocols.xmpp, accounts.erika_gmail, accounts.jason_yahoo, 
+    ['m7', protocols.chat, accounts.erika_gmail, accounts.jason_yahoo, 
     7, yesnos.yes, subjects.empty, reply_threads.rt5, "We are no longer friends."], 
-    ['m8', protocols.xmpp, accounts.erika_gmail, accounts.siiri_facebook, 
+    ['m8', protocols.chat, accounts.erika_gmail, accounts.siiri_facebook, 
     8, yesnos.yes, subjects.empty, reply_threads.rt3, "OK! booking my flight now!"],
-    ['m9', protocols.xmpp, accounts.kathy_yahoo, accounts.erika_gmail, 
+    ['m9', protocols.chat, accounts.kathy_yahoo, accounts.erika_gmail, 
     9, yesnos.no, subjects.empty, reply_threads.rt6, "Hey Erika, thanks for letting me copy your lecture notes :)"],
-    ['m10', protocols.sms, accounts._456_phone, accounts._123_phone, 
+    ['m10', protocols.text, accounts._456_phone, accounts._123_phone, 
     10, yesnos.no, subjects.empty, reply_threads.rt7, "Wait, you're actually coming?"]
   ], function (result, item) {
     result[item[0]] = dragoman.message(item[1], item[2], item[3], item[4], item[5], item[6], item[7], item[8]);
@@ -429,13 +429,13 @@ dragoman.database = function() {
 
       }],
 
-      ['with_xmpp_subscriber', 'With XMPP Subscriber', false, function(message) {
+      ['with_chat_subscriber', 'With XMPP Subscriber', false, function(message) {
 
         var corr_contact = attr_qwords.correspondent.value(message);
         if (corr_contact.source == null) {
-          if (message.protocol == protocols.xmpp) {
+          if (message.protocol == protocols.chat) {
             var corr_account = user.is_sender_of(message) ? message.receiver : message.sender; 
-            var subscriptions = _.filter(xmpp_send_subscriptions, function(sub) {
+            var subscriptions = _.filter(chat_send_subscriptions, function(sub) {
               return sub.subscriber == corr_account;
             });
 
@@ -448,12 +448,12 @@ dragoman.database = function() {
 
           var corr_accounts = _.map(_.filter(account_protocol_contacts, function(apc) {
             return apc.contact == corr_contact.source 
-              && apc.account_protocol.protocol === protocols.xmpp;
+              && apc.account_protocol.protocol === protocols.chat;
           }), function(apc) {
             return apc.account_protocol.account;
           });
           
-          var subscriptions = _.filter(xmpp_send_subscriptions, function(sub) {
+          var subscriptions = _.filter(chat_send_subscriptions, function(sub) {
             return  _.contains(corr_accounts, sub.subscriber);
           });
 
@@ -465,20 +465,20 @@ dragoman.database = function() {
         return _.map(yesnos, function(yesno) {
           return dragoman.value_qword(yesno.name, yesno);
         });
-      }, function(xmpp_sub_yesno) {
+      }, function(chat_sub_yesno) {
         return _.filter(messages, function(message) {
-          var yesno = attr_qwords.with_xmpp_subscriber.value(message);
-          return xmpp_sub_yesno == yesno.source;
+          var yesno = attr_qwords.with_chat_subscriber.value(message);
+          return chat_sub_yesno == yesno.source;
         });
       }],
 
-      ['with_xmpp_subscribee', 'With XMPP Subscribee', false, function(message) {
+      ['with_chat_subscribee', 'With XMPP Subscribee', false, function(message) {
 
         var corr_contact = attr_qwords.correspondent.value(message);
         if (corr_contact.source == null) {
-          if (message.protocol == protocols.xmpp) {
+          if (message.protocol == protocols.chat) {
             var corr_account = user.is_sender_of(message) ? message.receiver : message.sender; 
-            var subscriptions = _.filter(xmpp_send_subscriptions, function(sub) {
+            var subscriptions = _.filter(chat_send_subscriptions, function(sub) {
               return sub.subscribee == corr_account;
             });
 
@@ -491,12 +491,12 @@ dragoman.database = function() {
 
           var corr_accounts = _.map(_.filter(account_protocol_contacts, function(apc) {
             return apc.contact == corr_contact.source 
-              && apc.account_protocol.protocol === protocols.xmpp;
+              && apc.account_protocol.protocol === protocols.chat;
           }), function(apc) {
             return apc.account_protocol.account;
           });
           
-          var subscriptions = _.filter(xmpp_send_subscriptions, function(sub) {
+          var subscriptions = _.filter(chat_send_subscriptions, function(sub) {
             return  _.contains(corr_accounts, sub.subscribee);
           });
 
@@ -508,10 +508,10 @@ dragoman.database = function() {
         return _.map(yesnos, function(yesno) {
           return dragoman.value_qword(yesno.name, yesno);
         });
-      }, function(xmpp_sub_yesno) {
+      }, function(chat_sub_yesno) {
         return _.filter(messages, function(message) {
-          var yesno = attr_qwords.with_xmpp_subscribee.value(message);
-          return xmpp_sub_yesno == yesno.source;
+          var yesno = attr_qwords.with_chat_subscribee.value(message);
+          return chat_sub_yesno == yesno.source;
         });
       }],
 
