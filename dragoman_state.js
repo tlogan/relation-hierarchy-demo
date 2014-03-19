@@ -25,7 +25,7 @@ dragoman.state = function() {
   var organizations = [];
 
   var organizations = _.map([
-    ['Correspondents',
+    ['People',
       [db.attr_qwords.correspondent, db.conj_qwords.done], 
       [db.conj_qwords.done], 
       [db.attr_qwords.sender, db.attr_qwords.protocol, db.attr_qwords.body, db.conj_qwords.done]
@@ -36,7 +36,7 @@ dragoman.state = function() {
       [db.attr_qwords.sender, db.attr_qwords.receiver, 
       db.attr_qwords.subject, db.attr_qwords.body, db.conj_qwords.done]
     ],
-    ['Correspondents with Protocols',
+    ['People with Protocols',
       [db.attr_qwords.correspondent, db.conj_qwords.intersection, db.attr_qwords.protocol, db.conj_qwords.done], 
       [db.conj_qwords.done], 
       [db.attr_qwords.sender, db.attr_qwords.body, db.conj_qwords.done]
@@ -55,7 +55,7 @@ dragoman.state = function() {
       db.attr_qwords.subject, db.attr_qwords.body, db.conj_qwords.done]
     ],
 
-    ['With Subscriber or Not',
+    ['With Chat Subscriber or Not',
       [db.attr_qwords.with_chat_subscriber, db.conj_qwords.done], 
       [db.conj_qwords.done], 
       [db.attr_qwords.sender, db.attr_qwords.receiver, db.attr_qwords.protocol, 

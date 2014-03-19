@@ -1,4 +1,4 @@
-dragoman.io = function(){
+$(function(){
 
   var div = function() {
     return $('<div></div>');
@@ -628,16 +628,7 @@ dragoman.io = function(){
     on_user_change: on_user_change
   };
 
-  var start = function() {
+  dragoman.state.subscribe(handler);
 
-    dragoman.state.subscribe(handler);
-
-  };
-
-
-  return {
-    start: start
-  };
-
-}();
+});
 
