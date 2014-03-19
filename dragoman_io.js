@@ -373,7 +373,6 @@ $(function(){
 
     var i = $('#io')
       .css('color', white)
-      .css('height', '100%')
       .append(anchor_panel)
       ;
 
@@ -392,7 +391,6 @@ $(function(){
     };
 
     i.css('white-space', 'nowrap');
-    i.css('overflow-x', 'scroll');
 
     return i;
 
