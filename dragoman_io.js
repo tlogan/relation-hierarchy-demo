@@ -9,6 +9,7 @@ $(function(){
   var dk_gray = '#888';
   var gray = '#bbb';
   var lt_gray = '#eee';
+  var lt_blue = '#adf';
   var white = '#fff';
 
   var vertical_pane = function() {
@@ -50,17 +51,15 @@ $(function(){
   var mod_text_item = function(text) {
     return text_item(text) 
       .css('color', black)
-      .css('padding-top', '12px')
-      .css('padding-left', '16px')
-      .css('padding-bottom', '12px')
-      .css('padding-right', '12px')
-      .css('min-height', '15px')
+      .css('padding', '8px')
+      .css('min-height', '10px')
     ;
   };
 
   var inline_mod_text_item = function(text) {
     return mod_text_item(text)
       .css('color', black)
+      .css('font-family', 'monospace')
       .css('display', 'inline-block')
       .css('vertical-align', 'top')
     ;
@@ -72,7 +71,7 @@ $(function(){
       .css('color', black)
       .css('display', 'inline-block')
       .css('vertical-align', 'top')
-      .css('margin-right', '10px');
+      .css('margin-right', '4px');
     ;
   };
 
@@ -80,7 +79,8 @@ $(function(){
 
     var id = 'message_' + leaf.message.time; 
     var p = panel_item(id)
-      .css('padding', '4px');
+      .css('border-bottom', '1px solid ' + gray)
+      .css('padding', '8px');
 
     var db = dragoman.database;
 
@@ -100,7 +100,8 @@ $(function(){
         var item = inline_text_item(' > ' + pair.value_qword.name);
         p.append(item);
       } else if (pair.attr_qword == db.attr_qwords.protocol) {
-        var item = inline_text_item('[' + pair.value_qword.name + ']')
+        var item = inline_text_item(' via ' + pair.value_qword.name)
+          .css('font-style', 'italic');
         p.append(item);
       } else {
         p.append(div());
@@ -114,11 +115,6 @@ $(function(){
         //...
     });
 
-    if (leaf.is_sender_user()) {
-      p.css('background-color', lt_gray);
-    } else {
-      p.css('background-color', white);
-    }
 
     return p;
   };
@@ -291,6 +287,8 @@ $(function(){
 
   var row_button = function(text) {
     return button(text)
+      .css('color', black)
+      .css('border', '1px solid ' + gray)
       .css('background-color', lt_gray)
       .css('display', 'inline-block')
       .css('vertical-align', 'top')
@@ -321,12 +319,11 @@ $(function(){
 
 
   var body = $('body')
-    .css('font-family', 'monospace')
-    .css('font-size', '14px')
+    .css('font-size', '16px')
     .css('margin', 0);
 
   var highlight = function(item) {
-    item.css('background-color', lt_gray);
+    item.css('background-color', lt_blue);
     return item;
   };
 
@@ -372,6 +369,7 @@ $(function(){
   var io = function() {
 
     var i = $('#io')
+      .css('font-family', 'sans-serif')
       .css('color', white)
       .append(anchor_panel)
       ;
@@ -433,12 +431,15 @@ $(function(){
 
   var control_bar = function() {
     var d = div().attr('id', 'control_bar')
+      .css('font-family', 'monospace')
       .append(
         inline_mod_text_item('Dragoman')
-        .css('color', white)
+        .css('color', dk_gray)
       )
-      .css('background-color', green)
-      .css('border-bottom', '1px solid ' + lt_gray);
+      .css('padding-top', '8px')
+      .css('padding-bottom', '8px')
+      .css('background-color', white)
+      .css('border-bottom', '1px solid ' + dk_gray);
     d.insertBefore(io);
     return d;
   }();
@@ -472,7 +473,7 @@ $(function(){
         .css('display', 'inline-block')
         .css('vertical-align', 'top')
         .css('position', 'absolute')
-        .css('margin-top', '0px')
+        .css('margin-top', '1px')
         .css('z-index', '100')
         .css('border', '1px solid ' + gray)
         ;
@@ -539,6 +540,7 @@ $(function(){
 
       var header_item = panel_item('')
         .css('overflow', 'hidden')
+        .css('border-bottom', '1px solid ' + gray)
         ;
       if (dir.parent != null) {
 
@@ -548,18 +550,28 @@ $(function(){
             //go up one level
             dragoman.state.view_children(dir.parent);
           })
-        );
+        )
+        ;
 
-        var d = dir;
-        var path = '';
-        while (d != null) {
+
+      }
+
+      var d = dir;
+      var path = '';
+      while (d != null) {
+
+        if (d.pairs.length > 0) {
           path = '/' + _.map(d.pairs, function(pair) {
             return pair.value_qword.name;
           }).join(' x ') + path;
-          d = d.parent;
+        } else {
+          console.log(current_org);
+         path = '/' + current_org.name + path;
         }
-        header_item.append(inline_mod_text_item(path));
+        d = d.parent;
       }
+
+      header_item.append(inline_mod_text_item(path));
 
       header_item.append(
         inline_mod_text_item('edit')

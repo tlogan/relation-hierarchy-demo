@@ -707,7 +707,7 @@ dragoman.database = function() {
     ['intersection', 'x'],
     ['union', '+'],
     ['nest', '/'],
-    ['done', ';']
+    ['done', '...']
   ], function (result, item) {
     result[item[0]] = dragoman.qword(item[1]);
     return result;
