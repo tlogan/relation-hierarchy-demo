@@ -433,7 +433,7 @@ $(function(){
     var d = div().attr('id', 'control_bar')
       .css('font-family', 'monospace')
       .append(
-        inline_mod_text_item('Dragoman')
+        inline_mod_text_item('Blue Bear')
         .css('color', dk_gray)
       )
       .css('padding-top', '8px')
