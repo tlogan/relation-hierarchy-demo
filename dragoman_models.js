@@ -22,9 +22,9 @@ dragoman.account_protocol = function(account, protocol) { return {
     protocol: protocol,
 };};
 
-dragoman.subscription = function(subscriber, subscribee) { return {
-    subscriber: subscriber, 
-    subscribee: subscribee 
+dragoman.chat_pair = function(sender, receiver) { return {
+  sender: sender, 
+  receiver: receiver 
 };};
 
 dragoman.account_protocol_contact = function(account_protocol, contact) { return {
@@ -42,18 +42,18 @@ dragoman.subject = function(name, topic) { return {
     topic: topic
 };};
 
-dragoman.reply_thread = function() { return {
+dragoman.thread = function() { return {
 };};
 
 
-dragoman.message = function(protocol, sender, receiver, time, read, subject, reply_thread, body) { return {
+dragoman.message = function(protocol, sender, receiver, time, read, subject, thread, body) { return {
   protocol: protocol,
   sender: sender,
   receiver: receiver,
   time: time,
   read: read,
   subject: subject,
-  reply_thread: reply_thread,
+  thread: thread,
   body: body 
 };};
 
@@ -240,7 +240,7 @@ dragoman.database = function() {
     return result;
   }, {});
 
-  var chat_send_subscriptions = _.reduce([
+  var chat_pairs = _.reduce([
       ['erika_siiri', accounts.erika_gmail, accounts.siiri_facebook],
       ['siiri_erika', accounts.siiri_facebook, accounts.erika_gmail],
       ['erika_thomas', accounts.erika_gmail, accounts.thomas_gmail],
@@ -252,7 +252,7 @@ dragoman.database = function() {
       //erika can be sent messages from kathy
       ['kathy_erika', accounts.kathy_yahoo, accounts.erika_gmail]
   ], function (result, item) {
-    result[item[0]] = dragoman.subscription(item[1], item[2]);
+    result[item[0]] = dragoman.chat_pair(item[1], item[2]);
     return result;
   }, {});
 
@@ -341,34 +341,34 @@ dragoman.database = function() {
     return result;
   }, {});
 
-  var reply_threads = _.reduce([
+  var threads = _.reduce([
       'rt1', 'rt2', 'rt3', 'rt4', 'rt5', 'rt6', 'rt7'
   ], function (result, item) {
-    result[item] = dragoman.reply_thread();
+    result[item] = dragoman.thread();
     return result;
   }, {});
 
   var messages = _.reduce([
     ['m1', protocols.email, accounts.erika_gmail, accounts.siiri_facebook, 
-    1, yesnos.yes, subjects.greetings, reply_threads.rt1, 'Hey Pookey!'],
+    1, yesnos.yes, subjects.greetings, threads.rt1, 'Hey Pookey!'],
     ['m2', protocols.email, accounts.siiri_facebook, accounts.erika_gmail, 
-    2, yesnos.yes, subjects.re_greetings, reply_threads.rt1, "What's up girl?!!"],
+    2, yesnos.yes, subjects.re_greetings, threads.rt1, "What's up girl?!!"],
     ['m3', protocols.chat, accounts.thomas_gmail, accounts.erika_gmail, 
-    3, yesnos.yes, subjects.empty, reply_threads.rt2, "Hey can you buy me some more girl scout cookies?"],
+    3, yesnos.yes, subjects.empty, threads.rt2, "Hey can you buy me some more girl scout cookies?"],
     ['m4', protocols.chat, accounts.siiri_facebook, accounts.erika_gmail, 
-    4, yesnos.yes, subjects.re_greetings, reply_threads.rt3, "P.S. you should come to Israel"],
+    4, yesnos.yes, subjects.re_greetings, threads.rt3, "P.S. you should come to Israel"],
     ['m5', protocols.email, accounts.info_orbitz, accounts.erika_gmail, 
-    5, yesnos.yes, subjects.orbitz_flight, reply_threads.rt4, "Your flight information below:"],
+    5, yesnos.yes, subjects.orbitz_flight, threads.rt4, "Your flight information below:"],
     ['m6', protocols.chat, accounts.erika_gmail, accounts.thomas_gmail, 
-    6, yesnos.yes, subjects.empty, reply_threads.rt2, "I think you should eat more fruit instead"],
+    6, yesnos.yes, subjects.empty, threads.rt2, "I think you should eat more fruit instead"],
     ['m7', protocols.chat, accounts.erika_gmail, accounts.jason_yahoo, 
-    7, yesnos.yes, subjects.empty, reply_threads.rt5, "We are no longer friends."], 
+    7, yesnos.yes, subjects.empty, threads.rt5, "We are no longer friends."], 
     ['m8', protocols.chat, accounts.erika_gmail, accounts.siiri_facebook, 
-    8, yesnos.yes, subjects.empty, reply_threads.rt3, "OK! booking my flight now!"],
+    8, yesnos.yes, subjects.empty, threads.rt3, "OK! booking my flight now!"],
     ['m9', protocols.chat, accounts.kathy_yahoo, accounts.erika_gmail, 
-    9, yesnos.no, subjects.empty, reply_threads.rt6, "Hey Erika, thanks for letting me copy your lecture notes :)"],
+    9, yesnos.no, subjects.empty, threads.rt6, "Hey Erika, thanks for letting me copy your lecture notes :)"],
     ['m10', protocols.text, accounts._456_phone, accounts._123_phone, 
-    10, yesnos.no, subjects.empty, reply_threads.rt7, "Wait, you're actually coming?"]
+    10, yesnos.no, subjects.empty, threads.rt7, "Wait, you're actually coming?"]
   ], function (result, item) {
     result[item[0]] = dragoman.message(item[1], item[2], item[3], item[4], item[5], item[6], item[7], item[8]);
     return result;
@@ -429,17 +429,17 @@ dragoman.database = function() {
 
       }],
 
-      ['with_chat_subscriber', 'With XMPP Subscriber', false, function(message) {
+      ['with_chat_sender', 'With Chat Sender', false, function(message) {
 
         var corr_contact = attr_qwords.correspondent.value(message);
         if (corr_contact.source == null) {
           if (message.protocol == protocols.chat) {
             var corr_account = user.is_sender_of(message) ? message.receiver : message.sender; 
-            var subscriptions = _.filter(chat_send_subscriptions, function(sub) {
-              return sub.subscriber == corr_account;
+            var sender_chat_pairs = _.filter(chat_pairs, function(chat_pair) {
+              return chat_pair.sender == corr_account;
             });
 
-            var yesno = subscriptions.length > 0 ? yesnos.yes : yesnos.no;
+            var yesno = sender_chat_pairs.length > 0 ? yesnos.yes : yesnos.no;
             return dragoman.value_qword(yesno.name, yesno);
           } else {
             return dragoman.value_qword(yesnos.no.name, yesnos.no);
@@ -453,11 +453,11 @@ dragoman.database = function() {
             return apc.account_protocol.account;
           });
           
-          var subscriptions = _.filter(chat_send_subscriptions, function(sub) {
-            return  _.contains(corr_accounts, sub.subscriber);
+          var sender_chat_pairs = _.filter(chat_pairs, function(chat_pair) {
+            return  _.contains(corr_accounts, chat_pair.sender);
           });
 
-          var yesno = subscriptions.length > 0 ? yesnos.yes : yesnos.no;
+          var yesno = sender_chat_pairs.length > 0 ? yesnos.yes : yesnos.no;
           return dragoman.value_qword(yesno.name, yesno);
 
         }
@@ -465,24 +465,24 @@ dragoman.database = function() {
         return _.map(yesnos, function(yesno) {
           return dragoman.value_qword(yesno.name, yesno);
         });
-      }, function(chat_sub_yesno) {
+      }, function(chat_sender_yesno) {
         return _.filter(messages, function(message) {
-          var yesno = attr_qwords.with_chat_subscriber.value(message);
-          return chat_sub_yesno == yesno.source;
+          var yesno = attr_qwords.with_chat_sender.value(message);
+          return chat_sender_yesno == yesno.source;
         });
       }],
 
-      ['with_chat_subscribee', 'With XMPP Subscribee', false, function(message) {
+      ['with_chat_receiver', 'With Chat Receiver', false, function(message) {
 
         var corr_contact = attr_qwords.correspondent.value(message);
         if (corr_contact.source == null) {
           if (message.protocol == protocols.chat) {
             var corr_account = user.is_sender_of(message) ? message.receiver : message.sender; 
-            var subscriptions = _.filter(chat_send_subscriptions, function(sub) {
-              return sub.subscribee == corr_account;
+            var receiver_chat_pairs = _.filter(chat_pairs, function(chat_pair) {
+              return chat_pair.receiver == corr_account;
             });
 
-            var yesno = subscriptions.length > 0 ? yesnos.yes : yesnos.no;
+            var yesno = receiver_chat_pairs.length > 0 ? yesnos.yes : yesnos.no;
             return dragoman.value_qword(yesno.name, yesno);
           } else {
             return dragoman.value_qword(yesnos.no.name, yesnos.no);
@@ -496,11 +496,11 @@ dragoman.database = function() {
             return apc.account_protocol.account;
           });
           
-          var subscriptions = _.filter(chat_send_subscriptions, function(sub) {
-            return  _.contains(corr_accounts, sub.subscribee);
+          var receiver_chat_pairs = _.filter(chat_pairs, function(chat_pair) {
+            return  _.contains(corr_accounts, chat_pair.receiver);
           });
 
-          var yesno = subscriptions.length > 0 ? yesnos.yes : yesnos.no;
+          var yesno = receiver_chat_pairs.length > 0 ? yesnos.yes : yesnos.no;
           return dragoman.value_qword(yesno.name, yesno);
 
         }
@@ -508,10 +508,10 @@ dragoman.database = function() {
         return _.map(yesnos, function(yesno) {
           return dragoman.value_qword(yesno.name, yesno);
         });
-      }, function(chat_sub_yesno) {
+      }, function(chat_receiver_yesno) {
         return _.filter(messages, function(message) {
-          var yesno = attr_qwords.with_chat_subscribee.value(message);
-          return chat_sub_yesno == yesno.source;
+          var yesno = attr_qwords.with_chat_receiver.value(message);
+          return chat_receiver_yesno == yesno.source;
         });
       }],
 
@@ -631,34 +631,41 @@ dragoman.database = function() {
       }],
 
 
-      ['reply_thread', 'Reply Thread', false, function(message) {
+      ['thread', 'Thread', false, function(message) {
 
         var first_message = _.filter(_.toArray(messages), function(m) {
-          return m.reply_thread == message.reply_thread;
+          return m.thread == message.thread;
         })[0]; 
 
         var sender_qword = attr_qwords.sender.value(first_message);
-        var string = sender_qword.name + ', ' 
-        + receiver_qword.name + ' ~ ' + first_message.subject.topic.name;
+        var string = sender_qword.name + ', ' + receiver_qword.name; 
+        if (first_message.subject.topic.name.length > 0) {
+          console.log(first_message.subject.topic.name);
+          string = string + ' - ' + first_message.subject.topic.name;
+        }
 
-        return dragoman.value_qword(string, message.reply_thread);
+
+        return dragoman.value_qword(string, message.thread);
       }, function() { 
-        return _.map(reply_threads, function(reply_thread) {
+        return _.map(threads, function(thread) {
 
           var first_message = _.filter(_.toArray(messages), function(m) {
-            return m.reply_thread == reply_thread;
+            return m.thread == thread;
           })[0]; 
 
           var sender_qword = attr_qwords.sender.value(first_message);
           var receiver_qword = attr_qwords.receiver.value(first_message);
-          var string = sender_qword.name + ', ' 
-          + receiver_qword.name + ' ~ ' + first_message.subject.topic.name;
+          var string = sender_qword.name + ', ' + receiver_qword.name; 
+          if (first_message.subject.topic.name.length > 0) {
+            console.log(first_message.subject.topic.name);
+            string = string + ' - ' + first_message.subject.topic.name;
+          }
 
-          return dragoman.value_qword(string, reply_thread);
+          return dragoman.value_qword(string, thread);
         });
-      }, function(reply_thread) {
+      }, function(thread) {
         return _.filter(messages, function(m) {
-          return m.reply_thread === reply_thread;
+          return m.thread === thread;
         });
       }],
 
@@ -1011,6 +1018,7 @@ dragoman.database = function() {
 
 
   return {
+    yesnos: yesnos,
     protocols: protocols,
     attr_qwords: attr_qwords,
     conj_qwords: conj_qwords,

@@ -48,16 +48,23 @@ dragoman.state = function() {
       [db.attr_qwords.sender, db.attr_qwords.receiver_address, 
       db.attr_qwords.subject, db.attr_qwords.body, db.conj_qwords.done]
     ],
-    ['Reply Threads',
-      [db.attr_qwords.reply_thread, db.conj_qwords.done], 
+    ['Threads',
+      [db.attr_qwords.thread, db.conj_qwords.done], 
       [db.conj_qwords.done], 
       [db.attr_qwords.sender, db.attr_qwords.protocol, 
       db.attr_qwords.subject, db.attr_qwords.body, db.conj_qwords.done]
     ],
 
-    ['With Chat Subscriber or Not',
-      [db.attr_qwords.with_chat_subscriber, db.conj_qwords.done], 
+    ['Messages with Chat Friends',
       [db.conj_qwords.done], 
+
+      [db.attr_qwords.with_chat_sender,
+      dragoman.value_qword(db.yesnos.yes.name, db.yesnos.yes),
+      db.conj_qwords.intersection,
+      db.attr_qwords.with_chat_receiver, 
+      dragoman.value_qword(db.yesnos.yes.name, db.yesnos.yes),
+      db.conj_qwords.done], 
+
       [db.attr_qwords.sender, db.attr_qwords.receiver, db.attr_qwords.protocol, 
       db.attr_qwords.subject, db.attr_qwords.body, db.conj_qwords.done]
     ],
