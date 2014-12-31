@@ -82,7 +82,7 @@ $(function(){
       .css('border-bottom', '1px solid ' + gray)
       .css('padding', '8px');
 
-    var db = dragoman.database;
+    var db = sematree.database;
 
     _.forEach(leaf.pairs, function(pair) {
       
@@ -174,7 +174,7 @@ $(function(){
       .css('color', black)
       .click(function() {
         clicked_installed_qword_div = $(this); 
-        dragoman.state.change_qword_selection(position, query_phrase_type);
+        sematree.controller.change_qword_selection(position, query_phrase_type);
       });
 
   };
@@ -217,10 +217,10 @@ $(function(){
       [ tr().append(td().append(table_text_item('Name')), 
         td().append(text_input(org.name)
           .keypress(function() {
-            dragoman.state.change_current_org_name($(this).val())
+            sematree.controller.change_current_org_name($(this).val())
           })
           .keyup(function() {
-            dragoman.state.change_current_org_name($(this).val())
+            sematree.controller.change_current_org_name($(this).val())
           })
           .css('margin', '1px')
           .css('margin-left', '2px')
@@ -255,19 +255,19 @@ $(function(){
           .append(
             row_button('Save')
               .click(function() {
-                dragoman.state.save_organization();
+                sematree.controller.save_organization();
               })
           )
           .append(
             row_button('View')
               .click(function() {
-                dragoman.state.view_organization();
+                sematree.controller.view_organization();
               })
           )
           .append(
             row_button('Cancel')
               .click(function() {
-                dragoman.state.cancel_organization();
+                sematree.controller.cancel_organization();
               })
           )
       )
@@ -368,7 +368,7 @@ $(function(){
 
   var io = function() {
 
-    var i = $('#io')
+    var i = $('#ui')
       .css('font-family', 'sans-serif')
       .css('color', white)
       .append(anchor_panel)
@@ -422,7 +422,7 @@ $(function(){
     anchor_panel.append(mod_panel_item(id, 'new')
       .click(function() {
         clicked_anchor_panel_item = $(this);
-        dragoman.state.create_new_organization()
+        sematree.controller.create_new_organization()
       })
     );
     
@@ -433,7 +433,7 @@ $(function(){
     var d = div().attr('id', 'control_bar')
       .css('font-family', 'monospace')
       .append(
-        inline_mod_text_item('Blue Bear')
+        inline_mod_text_item('Semantic Tree')
         .css('color', dk_gray)
       )
       .css('padding-top', '8px')
@@ -456,7 +456,7 @@ $(function(){
         $(this).css('background-color', lt_gray);
       })
       .click(function() {
-        dragoman.state.replace_qword(qword, position, query_phrase_type); 
+        sematree.controller.replace_qword(qword, position, query_phrase_type); 
       })
     ;
 
@@ -510,8 +510,8 @@ $(function(){
       var item = mod_panel_item(id, org.name)
         .click(function() {
           clicked_anchor_panel_item = $(this);
-          dragoman.state.change_current_org(org);
-          dragoman.state.view_organization();
+          sematree.controller.change_current_org(org);
+          sematree.controller.view_organization();
         });
 
       if (org == saved_org) {
@@ -548,7 +548,7 @@ $(function(){
           .css('cursor', 'pointer')
           .click(function() {
             //go up one level
-            dragoman.state.view_children(dir.parent);
+            sematree.controller.view_children(dir.parent);
           })
         )
         ;
@@ -578,7 +578,7 @@ $(function(){
         .css('float', 'right')
         .css('cursor', 'pointer')
         .click(function() {
-          dragoman.state.remove_current_dir();
+          sematree.controller.remove_current_dir();
         })
       );
       
@@ -588,7 +588,7 @@ $(function(){
       children = null;
       _.forEach(files, function(file) {
 
-        if (file.file_type == dragoman.file_types.dir) {
+        if (file.file_type == sematree.file_types.dir) {
 
           var name_array = _.map(file.pairs, function(pair) {
             return pair.value_qword.name;
@@ -599,12 +599,12 @@ $(function(){
           }, 'dir'); 
           var item = mod_panel_item(id, name)
             .click(function() {
-              dragoman.state.view_children(file);
+              sematree.controller.view_children(file);
             })
           ;
           p.append(item);
 
-        } else if (file.file_type == dragoman.file_types.leaf) {
+        } else if (file.file_type == sematree.file_types.leaf) {
 
           p.append(leaf_panel_item(file));
 
@@ -638,7 +638,7 @@ $(function(){
     on_user_change: on_user_change
   };
 
-  dragoman.state.subscribe(handler);
+  sematree.controller.subscribe(handler);
 
 });
 

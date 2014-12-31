@@ -1,52 +1,52 @@
-var dragoman = {};
+var sematree = {};
 
-dragoman.host = function(name) { return {
+sematree.host = function(name) { return {
       name: name
 };};
 
-dragoman.account = function(name, host) { return {
+sematree.account = function(name, host) { return {
     name: name,
     host: host
 };};
 
-dragoman.protocol = function(name) { return {
+sematree.protocol = function(name) { return {
     name: name
 };};
 
-dragoman.contact = function(name) { return {
+sematree.contact = function(name) { return {
     name: name
 };};
 
-dragoman.account_protocol = function(account, protocol) { return {
+sematree.account_protocol = function(account, protocol) { return {
     account: account, 
     protocol: protocol,
 };};
 
-dragoman.chat_pair = function(sender, receiver) { return {
+sematree.chat_pair = function(sender, receiver) { return {
   sender: sender, 
   receiver: receiver 
 };};
 
-dragoman.account_protocol_contact = function(account_protocol, contact) { return {
+sematree.account_protocol_contact = function(account_protocol, contact) { return {
     account_protocol: account_protocol,
     contact: contact
 };};
 
 
-dragoman.topic = function(name) { return {
+sematree.topic = function(name) { return {
     name: name
 };};
 
-dragoman.subject = function(name, topic) { return {
+sematree.subject = function(name, topic) { return {
     name: name, 
     topic: topic
 };};
 
-dragoman.thread = function() { return {
+sematree.thread = function() { return {
 };};
 
 
-dragoman.message = function(protocol, sender, receiver, time, read, subject, thread, body) { return {
+sematree.message = function(protocol, sender, receiver, time, read, subject, thread, body) { return {
   protocol: protocol,
   sender: sender,
   receiver: receiver,
@@ -57,16 +57,16 @@ dragoman.message = function(protocol, sender, receiver, time, read, subject, thr
   body: body 
 };};
 
-dragoman.organization = function(name, query) { return {
+sematree.organization = function(name, query) { return {
   name: name,
   query: query 
 };};
 
-dragoman.qword = function(name) { return {
+sematree.qword = function(name) { return {
   name: name  
 };};
 
-dragoman.attr_value_pair = function(attr_qword, value_qword) { 
+sematree.attr_value_pair = function(attr_qword, value_qword) { 
   
   var messages = function() {
     return attr_qword.messages(value_qword.source); 
@@ -79,7 +79,7 @@ dragoman.attr_value_pair = function(attr_qword, value_qword) {
   };
 };
 
-dragoman.dir = function(pairs, parent) { 
+sematree.dir = function(pairs, parent) { 
 
   var level = 
     (parent == null) ? 0
@@ -90,7 +90,7 @@ dragoman.dir = function(pairs, parent) {
     : _.flatten([pairs, parent.all_pairs]);
   
   return {
-    file_type: dragoman.file_types.dir,
+    file_type: sematree.file_types.dir,
     pairs: pairs,
     parent: parent,
     children: null,
@@ -99,15 +99,15 @@ dragoman.dir = function(pairs, parent) {
   };
 };
 
-dragoman.leaf = function(preview_qwords, user, message) { 
+sematree.leaf = function(preview_qwords, user, message) { 
 
   var obj = {};
   obj.pairs = _.map(preview_qwords, function(qword) {
-    return dragoman.attr_value_pair(qword, qword.value(message));
+    return sematree.attr_value_pair(qword, qword.value(message));
   });
 
   obj.is_sender_user = function() { return user.is_sender_of(message); };
-  obj.file_type = dragoman.file_types.leaf;
+  obj.file_type = sematree.file_types.leaf;
   obj.message = message;
 
   return obj;
@@ -115,13 +115,13 @@ dragoman.leaf = function(preview_qwords, user, message) {
 
 
 /*
- * value: function(dragoman.message()): dragoman.value_qword() 
- * values: function(): [dragoman.value_qword()] 
- * messages: function(dragoman.value.qword()): [dragoman.message()]
+ * value: function(sematree.message()): sematree.value_qword() 
+ * values: function(): [sematree.value_qword()] 
+ * messages: function(sematree.value.qword()): [sematree.message()]
  */
-dragoman.attr_qword = function(name, open, value, value_qwords, messages) { 
+sematree.attr_qword = function(name, open, value, value_qwords, messages) { 
 
-  var a = dragoman.qword(name); 
+  var a = sematree.qword(name); 
   a.open = open;
   a.value = value;
   a.value_qwords = value_qwords;
@@ -130,38 +130,38 @@ dragoman.attr_qword = function(name, open, value, value_qwords, messages) {
   
 };
 
-dragoman.value_qword = function(name, source) { 
-  var v = dragoman.qword(name); 
+sematree.value_qword = function(name, source) { 
+  var v = sematree.qword(name); 
   v.source = source 
   return v;
 };
 
-dragoman.org_data = function(org, data, options) { return {
+sematree.org_data = function(org, data, options) { return {
   org: org,
   data: data, 
   options: options
 };};
 
-dragoman.qword_selection = function(position, query_phrase_type, qwords) { return {
+sematree.qword_selection = function(position, query_phrase_type, qwords) { return {
     position: position,
     query_phrase_type: query_phrase_type, 
     qwords: qwords 
 };};
 
 //takes a query phrase of each type
-dragoman.query = function(groups_phrase, filters_phrase, preview_phrase) { return {
+sematree.query = function(groups_phrase, filters_phrase, preview_phrase) { return {
   groups: groups_phrase,
   filters: filters_phrase,
   preview: preview_phrase
 };};
 
 //selection is a function
-dragoman.query_phrase_type = function(name, selection) { return {
+sematree.query_phrase_type = function(name, selection) { return {
   name: name,
   selection: selection
 };};
 
-dragoman.query_phrase = function(query_phrase_type, qwords) { 
+sematree.query_phrase = function(query_phrase_type, qwords) { 
 
   var selection = function(position) {
     var prev_qwords = qwords.slice(0, position);
@@ -176,12 +176,12 @@ dragoman.query_phrase = function(query_phrase_type, qwords) {
 
 };
 
-dragoman.file_types = {
+sematree.file_types = {
   dir: 1, 
   leaf: 2, 
 };
 
-dragoman.database = function() {
+sematree.database = function() {
 
   var hosts = _.reduce([
     ['gmail','gmail.com'],
@@ -190,7 +190,7 @@ dragoman.database = function() {
     ['orbitz', 'orbitz.com'],
     ['phone', 'phone']
   ], function (result, item) {
-    result[item[0]] = dragoman.host(item[1]);
+    result[item[0]] = sematree.host(item[1]);
     return result;
   }, {});
 
@@ -205,7 +205,7 @@ dragoman.database = function() {
       ['_123_phone', '123', hosts.phone],
       ['_456_phone', '456', hosts.phone]
   ], function (result, item) {
-    result[item[0]] = dragoman.account(item[1], item[2]);
+    result[item[0]] = sematree.account(item[1], item[2]);
     return result;
   }, {});
 
@@ -217,7 +217,7 @@ dragoman.database = function() {
     'text',
     'voice' 
   ], function (result, item) {
-    result[item] = dragoman.protocol(item);
+    result[item] = sematree.protocol(item);
     return result;
   }, {});
 
@@ -236,7 +236,7 @@ dragoman.database = function() {
       ['kathy_yahoo_chat', accounts.kathy_yahoo, protocols.chat],
       ['info_orbitz_email', accounts.info_orbitz, protocols.email]
   ], function (result, item) {
-    result[item[0]] = dragoman.account_protocol(item[1], item[2]);
+    result[item[0]] = sematree.account_protocol(item[1], item[2]);
     return result;
   }, {});
 
@@ -252,7 +252,7 @@ dragoman.database = function() {
       //erika can be sent messages from kathy
       ['kathy_erika', accounts.kathy_yahoo, accounts.erika_gmail]
   ], function (result, item) {
-    result[item[0]] = dragoman.chat_pair(item[1], item[2]);
+    result[item[0]] = sematree.chat_pair(item[1], item[2]);
     return result;
   }, {});
 
@@ -261,7 +261,7 @@ dragoman.database = function() {
     ['siiri', 'Siiri'],
     ['thomas', 'Thomas']
   ], function (result, item) {
-    result[item[0]] = dragoman.contact(item[1]);
+    result[item[0]] = sematree.contact(item[1]);
     return result;
   }, {});
 
@@ -308,7 +308,7 @@ dragoman.database = function() {
     ['_456_phone_text_siiri', aps._456_phone_text, contacts.siiri],
     ['thomas_gmail_chat_thomas', aps.thomas_gmail_chat, contacts.thomas]
   ], function (result, item) {
-    result[item[0]] = dragoman.account_protocol_contact(item[1], item[2]);
+    result[item[0]] = sematree.account_protocol_contact(item[1], item[2]);
     return result;
   }, {});
 
@@ -317,7 +317,7 @@ dragoman.database = function() {
     no: {name: 'no'}
   };
 
-  dragoman.topic = function(name) { return {
+  sematree.topic = function(name) { return {
       name: name
   };};
 
@@ -326,7 +326,7 @@ dragoman.database = function() {
     ['greetings', 'greetings'],
     ['orbitz_flight', 'Orbitz Flight']
   ], function (result, item) {
-    result[item[0]] = dragoman.topic(item[1]);
+    result[item[0]] = sematree.topic(item[1]);
     return result;
   }, {});
 
@@ -337,14 +337,14 @@ dragoman.database = function() {
     ['re_greetings', 'RE: greetings', topics.greetings],
     ['orbitz_flight', 'Orbitz Flight', topics.orbitz_flight]
   ], function (result, item) {
-    result[item[0]] = dragoman.subject(item[1], item[2]);
+    result[item[0]] = sematree.subject(item[1], item[2]);
     return result;
   }, {});
 
   var threads = _.reduce([
       'rt1', 'rt2', 'rt3', 'rt4', 'rt5', 'rt6', 'rt7'
   ], function (result, item) {
-    result[item] = dragoman.thread();
+    result[item] = sematree.thread();
     return result;
   }, {});
 
@@ -370,7 +370,7 @@ dragoman.database = function() {
     ['m10', protocols.text, accounts._456_phone, accounts._123_phone, 
     10, yesnos.no, subjects.empty, threads.rt7, "Wait, you're actually coming?"]
   ], function (result, item) {
-    result[item[0]] = dragoman.message(item[1], item[2], item[3], item[4], item[5], item[6], item[7], item[8]);
+    result[item[0]] = sematree.message(item[1], item[2], item[3], item[4], item[5], item[6], item[7], item[8]);
     return result;
   }, {});
 
@@ -378,7 +378,7 @@ dragoman.database = function() {
 
     var account_values = function() {
       return _.map(accounts, function(account) {
-        return dragoman.value_qword(account.name + '@' + account.host.name, account);
+        return sematree.value_qword(account.name + '@' + account.host.name, account);
       });
     };
 
@@ -395,16 +395,16 @@ dragoman.database = function() {
         });
         if (corr_apcs.length > 0) {
           var contact = corr_apcs[0].contact;
-          return dragoman.value_qword(contact.name, contact);
+          return sematree.value_qword(contact.name, contact);
         } else {
           var account =  user.is_sender_of(message)
             ? message.receiver : message.sender;
           var host = account.host;
-          return dragoman.value_qword(account.name + '@' + host.name, null);
+          return sematree.value_qword(account.name + '@' + host.name, null);
         }
       }, function() {
         return _.map(contacts, function(contact) {
-          return dragoman.value_qword(contact.name, contact);
+          return sematree.value_qword(contact.name, contact);
         });
       }, function(corr_contact) {
         var corr_aps = _.map(_.filter(account_protocol_contacts, function(apc) {
@@ -440,9 +440,9 @@ dragoman.database = function() {
             });
 
             var yesno = sender_chat_pairs.length > 0 ? yesnos.yes : yesnos.no;
-            return dragoman.value_qword(yesno.name, yesno);
+            return sematree.value_qword(yesno.name, yesno);
           } else {
-            return dragoman.value_qword(yesnos.no.name, yesnos.no);
+            return sematree.value_qword(yesnos.no.name, yesnos.no);
           }
         } else {
 
@@ -458,12 +458,12 @@ dragoman.database = function() {
           });
 
           var yesno = sender_chat_pairs.length > 0 ? yesnos.yes : yesnos.no;
-          return dragoman.value_qword(yesno.name, yesno);
+          return sematree.value_qword(yesno.name, yesno);
 
         }
       }, function() {
         return _.map(yesnos, function(yesno) {
-          return dragoman.value_qword(yesno.name, yesno);
+          return sematree.value_qword(yesno.name, yesno);
         });
       }, function(chat_sender_yesno) {
         return _.filter(messages, function(message) {
@@ -483,9 +483,9 @@ dragoman.database = function() {
             });
 
             var yesno = receiver_chat_pairs.length > 0 ? yesnos.yes : yesnos.no;
-            return dragoman.value_qword(yesno.name, yesno);
+            return sematree.value_qword(yesno.name, yesno);
           } else {
-            return dragoman.value_qword(yesnos.no.name, yesnos.no);
+            return sematree.value_qword(yesnos.no.name, yesnos.no);
           }
         } else {
 
@@ -501,12 +501,12 @@ dragoman.database = function() {
           });
 
           var yesno = receiver_chat_pairs.length > 0 ? yesnos.yes : yesnos.no;
-          return dragoman.value_qword(yesno.name, yesno);
+          return sematree.value_qword(yesno.name, yesno);
 
         }
       }, function() {
         return _.map(yesnos, function(yesno) {
-          return dragoman.value_qword(yesno.name, yesno);
+          return sematree.value_qword(yesno.name, yesno);
         });
       }, function(chat_receiver_yesno) {
         return _.filter(messages, function(message) {
@@ -522,15 +522,15 @@ dragoman.database = function() {
         });
         if (sender_apcs.length > 0) {
           var contact = sender_apcs[0].contact;
-          return dragoman.value_qword(contact.name, contact);
+          return sematree.value_qword(contact.name, contact);
         } else {
           var account = message.sender;
           var host = account.host;
-          return dragoman.value_qword(account.name + '@' + host.name, null);
+          return sematree.value_qword(account.name + '@' + host.name, null);
         }
       }, function() {
         return _.map(contacts, function(contact) {
-          return dragoman.value_qword(contact.name, contact);
+          return sematree.value_qword(contact.name, contact);
         });
       }, function(sender_contact) {
         var contact_aps = _.map(_.filter(account_protocol_contacts, function(apc) {
@@ -551,15 +551,15 @@ dragoman.database = function() {
         });
         if (receiver_apcs.length > 0) {
           var contact = receiver_apcs[0].contact;
-          return dragoman.value_qword(contact.name, contact);
+          return sematree.value_qword(contact.name, contact);
         } else {
           var account = message.receiver;
           var host = account.host;
-          return dragoman.value_qword(account.name + '@' + host.name, null);
+          return sematree.value_qword(account.name + '@' + host.name, null);
         }
       }, function() {
         return _.map(contacts, function(contact) {
-          return dragoman.value_qword(contact.name, contact);
+          return sematree.value_qword(contact.name, contact);
         });
       }, function(receiver_contact) {
         var contact_aps = _.map(_.filter(account_protocol_contacts, function(apc) {
@@ -575,10 +575,10 @@ dragoman.database = function() {
       }],
       ['protocol', 'Protocol', false, function(message) {
         var protocol = message.protocol;
-        return dragoman.value_qword(protocol.name, protocol);
+        return sematree.value_qword(protocol.name, protocol);
       }, function() {
         return _.map(protocols, function(protocol) {
-          return dragoman.value_qword(protocol.name, protocol);
+          return sematree.value_qword(protocol.name, protocol);
         });
       }, function(protocol) {
         return _.filter(messages, function(m) {
@@ -589,7 +589,7 @@ dragoman.database = function() {
         var account = message.sender;
         var host = account.host;
         var string = account.name + '@' + host.name;
-        return dragoman.value_qword(string, account);
+        return sematree.value_qword(string, account);
       }, account_values, function(account) {
         return _.filter(messages, function(m) {
           return m.sender == account;
@@ -599,7 +599,7 @@ dragoman.database = function() {
         var account = message.receiver;
         var host = account.host;
         var string = account.name + '@' + host.name;
-        return dragoman.value_qword(string, account);
+        return sematree.value_qword(string, account);
       }, account_values, function(account) { 
         return _.filter(messages, function(m) {
           return m.receiver == account;
@@ -607,10 +607,10 @@ dragoman.database = function() {
       }],
 
       ['subject', 'Subject', false, function(message) {
-        return dragoman.value_qword(message.subject.name, message.subject);
+        return sematree.value_qword(message.subject.name, message.subject);
       }, function() { 
         return _.map(subjects, function(subject) {
-          return dragoman.value_qword(subject.name, subject);
+          return sematree.value_qword(subject.name, subject);
         });
       }, function(subject) {
         return _.filter(messages, function(m) {
@@ -619,10 +619,10 @@ dragoman.database = function() {
       }],
 
       ['topic', 'Topic', false, function(message) {
-        return dragoman.value_qword(message.subject.topic.name, message.subject.topic);
+        return sematree.value_qword(message.subject.topic.name, message.subject.topic);
       }, function() { 
         return _.map(topics, function(topic) {
-          return dragoman.value_qword(topic.name, topic);
+          return sematree.value_qword(topic.name, topic);
         });
       }, function(topic) {
         return _.filter(messages, function(m) {
@@ -645,7 +645,7 @@ dragoman.database = function() {
         }
 
 
-        return dragoman.value_qword(string, message.thread);
+        return sematree.value_qword(string, message.thread);
       }, function() { 
         return _.map(threads, function(thread) {
 
@@ -661,7 +661,7 @@ dragoman.database = function() {
             string = string + ' - ' + first_message.subject.topic.name;
           }
 
-          return dragoman.value_qword(string, thread);
+          return sematree.value_qword(string, thread);
         });
       }, function(thread) {
         return _.filter(messages, function(m) {
@@ -670,10 +670,10 @@ dragoman.database = function() {
       }],
 
       ['body', 'Body', true, function(message) {
-        return dragoman.value_qword(message.body, message.body);
+        return sematree.value_qword(message.body, message.body);
       }, function() { 
         return _.map(messages, function(message) {
-          return dragoman.value_qword(message.body, message.body);
+          return sematree.value_qword(message.body, message.body);
         });
       }, function(body) {
         return _.filter(messages, function(m) {
@@ -682,10 +682,10 @@ dragoman.database = function() {
       }],
 
       ['read', 'Read', false, function(message) {
-        return dragoman.value_qword(message.read.name, message.read);
+        return sematree.value_qword(message.read.name, message.read);
       }, function() { 
         return _.map(yesnos, function(yesno) {
-          return dragoman.value_qword(yesno.name, yesno);
+          return sematree.value_qword(yesno.name, yesno);
         });
       }, function(read) {
         return _.filter(messages, function(m) {
@@ -699,7 +699,7 @@ dragoman.database = function() {
       var value = item[3];
       var values = item[4];
       var messages = item[5];
-      var attribute = dragoman.attr_qword(attr_name, open, value, values, messages);
+      var attribute = sematree.attr_qword(attr_name, open, value, values, messages);
 
       result[item[0]] = attribute;
       return result;
@@ -716,7 +716,7 @@ dragoman.database = function() {
     ['nest', '/'],
     ['done', '...']
   ], function (result, item) {
-    result[item[0]] = dragoman.qword(item[1]);
+    result[item[0]] = sematree.qword(item[1]);
     return result;
   }, {});
 
@@ -763,14 +763,14 @@ dragoman.database = function() {
     }]
 
   ], function (result, item) {
-    result[item[0]] = dragoman.query_phrase_type(item[0], item[1]);
+    result[item[0]] = sematree.query_phrase_type(item[0], item[1]);
     return result;
   }, {});
 
 
   /*
-   * returns [dragoman.dir()...]
-   * or returns [dragoman.message()...]
+   * returns [sematree.dir()...]
+   * or returns [sematree.message()...]
    */
   var get_org_content = function(org, parent_dir) {
 
@@ -807,7 +807,7 @@ dragoman.database = function() {
     var _messages = _.intersection(dir_messages, filt_messages);
 
     return _.map(_messages, function(message) {
-      return dragoman.leaf(preview_qwords, user, message);
+      return sematree.leaf(preview_qwords, user, message);
     }); 
   };
 
@@ -846,8 +846,8 @@ dragoman.database = function() {
 
 
   /*
-   * returns [dragoman.dir()...]
-   * or returns [dragoman.message()...]
+   * returns [sematree.dir()...]
+   * or returns [sematree.message()...]
    */
   var level_dirs = function(_level_qwords, parent_dir, filt_messages) {
 
@@ -870,7 +870,7 @@ dragoman.database = function() {
     });
 
     var _dirs = _.map(_filtered_pair_groups, function(pairs) {
-      return dragoman.dir(pairs, parent_dir);
+      return sematree.dir(pairs, parent_dir);
     });
 
     return _dirs;
@@ -947,7 +947,7 @@ dragoman.database = function() {
     var attr_qword = qwords[l - 1];
     var value_qwords = attr_qword.value_qwords();
     var av_groups = _.map(value_qwords, function(value_qword) {
-      return [dragoman.attr_value_pair(attr_qword, value_qword)];
+      return [sematree.attr_value_pair(attr_qword, value_qword)];
     }); 
     
     if (l == 1) {

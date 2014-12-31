@@ -1,6 +1,6 @@
-dragoman.state = function() {
+sematree.controller = function() {
 
-  var db = dragoman.database; 
+  var db = sematree.database; 
 
   var io_handlers = [];
 
@@ -12,12 +12,12 @@ dragoman.state = function() {
 
   var user = db.user;
 
-  var new_org = dragoman.organization(
+  var new_org = sematree.organization(
     '',
-    dragoman.query(
-      dragoman.query_phrase(db.query_phrase_types.groups,[db.conj_qwords.done]), 
-      dragoman.query_phrase(db.query_phrase_types.filters,[db.conj_qwords.done]), 
-      dragoman.query_phrase(db.query_phrase_types.preview, [db.attr_qwords.body, db.conj_qwords.done])
+    sematree.query(
+      sematree.query_phrase(db.query_phrase_types.groups,[db.conj_qwords.done]), 
+      sematree.query_phrase(db.query_phrase_types.filters,[db.conj_qwords.done]), 
+      sematree.query_phrase(db.query_phrase_types.preview, [db.attr_qwords.body, db.conj_qwords.done])
     )
   );
 
@@ -43,7 +43,7 @@ dragoman.state = function() {
     ],
     ['Email Correspondents',
       [db.attr_qwords.correspondent, db.conj_qwords.done], 
-      [db.attr_qwords.protocol, dragoman.value_qword(db.protocols.email.name, db.protocols.email)
+      [db.attr_qwords.protocol, sematree.value_qword(db.protocols.email.name, db.protocols.email)
       , db.conj_qwords.done], 
       [db.attr_qwords.sender, db.attr_qwords.receiver_address, 
       db.attr_qwords.subject, db.attr_qwords.body, db.conj_qwords.done]
@@ -59,10 +59,10 @@ dragoman.state = function() {
       [db.conj_qwords.done], 
 
       [db.attr_qwords.with_chat_sender,
-      dragoman.value_qword(db.yesnos.yes.name, db.yesnos.yes),
+      sematree.value_qword(db.yesnos.yes.name, db.yesnos.yes),
       db.conj_qwords.intersection,
       db.attr_qwords.with_chat_receiver, 
-      dragoman.value_qword(db.yesnos.yes.name, db.yesnos.yes),
+      sematree.value_qword(db.yesnos.yes.name, db.yesnos.yes),
       db.conj_qwords.done], 
 
       [db.attr_qwords.sender, db.attr_qwords.receiver, db.attr_qwords.protocol, 
@@ -70,12 +70,12 @@ dragoman.state = function() {
     ],
 
   ], function (item) {
-    var org = dragoman.organization(
+    var org = sematree.organization(
       item[0],
-      dragoman.query(
-        dragoman.query_phrase(db.query_phrase_types.groups, item[1]), 
-        dragoman.query_phrase(db.query_phrase_types.filters, item[2]), 
-        dragoman.query_phrase(db.query_phrase_types.preview, item[3])
+      sematree.query(
+        sematree.query_phrase(db.query_phrase_types.groups, item[1]), 
+        sematree.query_phrase(db.query_phrase_types.filters, item[2]), 
+        sematree.query_phrase(db.query_phrase_types.preview, item[3])
       )
     );
     return org;
@@ -134,7 +134,7 @@ dragoman.state = function() {
     }
 
     var qwords = current_org.query[query_phrase_type].selection(position);
-    set_qword_selection(dragoman.qword_selection(position, query_phrase_type, qwords)); 
+    set_qword_selection(sematree.qword_selection(position, query_phrase_type, qwords)); 
 
   };
 
@@ -147,14 +147,14 @@ dragoman.state = function() {
 
       var new_qwords = db.new_qwords(query_phrase_type, old_qwords, qword, position);
 
-      var new_query = dragoman.query(
+      var new_query = sematree.query(
         current_org.query.groups, 
         current_org.query.filters, 
         current_org.query.preview 
       );
-      new_query[query_phrase_type_id] = dragoman.query_phrase(query_phrase_type, new_qwords);
+      new_query[query_phrase_type_id] = sematree.query_phrase(query_phrase_type, new_qwords);
 
-      var org = dragoman.organization(
+      var org = sematree.organization(
         current_org.name,
         new_query
       );
@@ -171,7 +171,7 @@ dragoman.state = function() {
 
     if (saved_org == new_org) {
 
-      var org = dragoman.organization(
+      var org = sematree.organization(
         current_org.name,
         current_org.query
       );
@@ -196,7 +196,7 @@ dragoman.state = function() {
   };
 
   var change_current_org_name = function(name) {
-    var org = dragoman.organization(
+    var org = sematree.organization(
       name,
       current_org.query
     );
@@ -229,7 +229,7 @@ dragoman.state = function() {
     }
 
 
-    var current_dir =  dragoman.dir([], null);
+    var current_dir =  sematree.dir([], null);
     current_dir.children = db.get_org_content(current_org, current_dir);
 
     set_current_dir(current_dir);
